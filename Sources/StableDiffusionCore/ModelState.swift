@@ -8,13 +8,13 @@ public actor ModelState {
     private var pipeline: StableDiffusionPipeline?
     private var tokenizer: BPETokenizer?
 
-    public init(url: URL) throws {
+    public init(url: URL) {
         self.url = url
     }
 
     public func load() throws {
         let config = MLModelConfiguration()
-        config.computeUnits = .all
+        config.computeUnits = .cpuAndGPU
         pipeline = try StableDiffusionPipeline(
             resourcesAt: url,
             controlNet: [],
@@ -25,6 +25,7 @@ public actor ModelState {
         let mergesUrl = url.appending(component: "merges.txt")
         let vocabUrl = url.appending(component: "vocab.json")
         tokenizer = try BPETokenizer(mergesAt: mergesUrl, vocabularyAt: vocabUrl)
+        try pipeline?.loadResources()
     }
 
     public func generate(_ request: SdGenerateImagesRequest) throws -> SdGenerateImagesResponse {

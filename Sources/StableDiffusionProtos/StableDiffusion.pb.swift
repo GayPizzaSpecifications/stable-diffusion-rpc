@@ -117,6 +117,8 @@ public struct SdModelInfo {
 
   public var attention: String = String()
 
+  public var isLoaded: Bool = false
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
@@ -272,6 +274,7 @@ extension SdModelInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "name"),
     2: .same(proto: "attention"),
+    3: .standard(proto: "is_loaded"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -282,6 +285,7 @@ extension SdModelInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularStringField(value: &self.name) }()
       case 2: try { try decoder.decodeSingularStringField(value: &self.attention) }()
+      case 3: try { try decoder.decodeSingularBoolField(value: &self.isLoaded) }()
       default: break
       }
     }
@@ -294,12 +298,16 @@ extension SdModelInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     if !self.attention.isEmpty {
       try visitor.visitSingularStringField(value: self.attention, fieldNumber: 2)
     }
+    if self.isLoaded != false {
+      try visitor.visitSingularBoolField(value: self.isLoaded, fieldNumber: 3)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: SdModelInfo, rhs: SdModelInfo) -> Bool {
     if lhs.name != rhs.name {return false}
     if lhs.attention != rhs.attention {return false}
+    if lhs.isLoaded != rhs.isLoaded {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

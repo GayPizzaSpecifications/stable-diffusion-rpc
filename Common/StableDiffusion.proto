@@ -6,6 +6,7 @@ option swift_prefix = "Sd";
 message ModelInfo {
     string name = 1;
     string attention = 2;
+    bool is_loaded = 3;
 }
 
 message Image {

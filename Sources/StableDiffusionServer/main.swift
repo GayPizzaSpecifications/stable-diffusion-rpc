@@ -15,13 +15,11 @@ struct ServerCommand: ParsableCommand {
 
         let semaphore = DispatchSemaphore(value: 0)
         Task {
-            print("Loading initial models...")
             do {
                 try await modelManager.reloadModels()
             } catch {
                 ServerCommand.exit(withError: error)
             }
-            print("Loaded initial models.")
             semaphore.signal()
         }
         semaphore.wait()

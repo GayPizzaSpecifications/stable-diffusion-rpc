@@ -15,6 +15,7 @@ public actor ModelManager {
 
     public func reloadModels() throws {
         modelInfos.removeAll()
+        modelUrls.removeAll()
         modelStates.removeAll()
         let contents = try FileManager.default.contentsOfDirectory(at: modelBaseURL.resolvingSymlinksInPath(), includingPropertiesForKeys: [.isDirectoryKey])
         for subdirectoryURL in contents {
@@ -29,6 +30,22 @@ public actor ModelManager {
         Array(modelInfos.values)
     }
 
+    public func createModelState(name: String) throws -> ModelState {
+        let state = modelStates[name]
+        let url = modelUrls[name]
+        guard let url else {
+            throw SdCoreError.modelNotFound
+        }
+
+        if state == nil {
+            let state = ModelState(url: url)
+            modelStates[name] = state
+            return state
+        } else {
+            return state!
+        }
+    }
+
     public func getModelState(name: String) -> ModelState? {
         modelStates[name]
     }
@@ -40,7 +57,6 @@ public actor ModelManager {
         info.attention = attention ?? "unknown"
         modelInfos[info.name] = info
         modelUrls[info.name] = url
-        modelStates[info.name] = try ModelState(url: url)
     }
 
     private func getModelAttention(_ url: URL) -> String? {

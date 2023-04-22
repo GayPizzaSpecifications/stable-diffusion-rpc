@@ -1,18 +1,18 @@
-import Foundation
-import StableDiffusionProtos
-import StableDiffusion
 import CoreML
+import Foundation
+import StableDiffusion
+import StableDiffusionProtos
 
-actor ModelState {
+public actor ModelState {
     private let url: URL
-    private var pipeline: StableDiffusionPipeline? = nil
-    private var tokenizer: BPETokenizer? = nil
+    private var pipeline: StableDiffusionPipeline?
+    private var tokenizer: BPETokenizer?
 
-    init(url: URL) throws {
+    public init(url: URL) throws {
         self.url = url
     }
-    
-    func load() throws {
+
+    public func load() throws {
         let config = MLModelConfiguration()
         config.computeUnits = .all
         pipeline = try StableDiffusionPipeline(
@@ -26,20 +26,20 @@ actor ModelState {
         let vocabUrl = url.appending(component: "vocab.json")
         tokenizer = try BPETokenizer(mergesAt: mergesUrl, vocabularyAt: vocabUrl)
     }
-    
-    func generate(_ request: SdGenerateImagesRequest) throws -> SdGenerateImagesResponse {
+
+    public func generate(_ request: SdGenerateImagesRequest) throws -> SdGenerateImagesResponse {
         guard let pipeline else {
-            throw SdServerError.modelNotLoaded
+            throw SdCoreError.modelNotLoaded
         }
-        
+
         var pipelineConfig = StableDiffusionPipeline.Configuration(prompt: request.prompt)
         pipelineConfig.negativePrompt = request.negativePrompt
         pipelineConfig.seed = UInt32.random(in: 0 ..< UInt32.max)
-        
+
         var response = SdGenerateImagesResponse()
         for _ in 0 ..< request.imageCount {
             let images = try pipeline.generateImages(configuration: pipelineConfig)
-            
+
             for cgImage in images {
                 guard let cgImage else { continue }
                 var image = SdImage()

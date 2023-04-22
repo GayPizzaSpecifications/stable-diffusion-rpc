@@ -2,18 +2,18 @@ import Foundation
 import StableDiffusion
 import StableDiffusionProtos
 
-actor ModelManager {
-    private var modelInfos: [String : SdModelInfo] = [:]
-    private var modelUrls: [String : URL] = [:]
-    private var modelStates: [String : ModelState] = [:]
-    
+public actor ModelManager {
+    private var modelInfos: [String: SdModelInfo] = [:]
+    private var modelUrls: [String: URL] = [:]
+    private var modelStates: [String: ModelState] = [:]
+
     private let modelBaseURL: URL
-    
+
     public init(modelBaseURL: URL) {
         self.modelBaseURL = modelBaseURL
     }
 
-    func reloadModels() throws {
+    public func reloadModels() throws {
         modelInfos.removeAll()
         modelStates.removeAll()
         let contents = try FileManager.default.contentsOfDirectory(at: modelBaseURL.resolvingSymlinksInPath(), includingPropertiesForKeys: [.isDirectoryKey])
@@ -24,15 +24,15 @@ actor ModelManager {
             }
         }
     }
-    
-    func listModels() -> [SdModelInfo] {
-        return Array(modelInfos.values)
+
+    public func listModels() -> [SdModelInfo] {
+        Array(modelInfos.values)
     }
-    
-    func getModelState(name: String) -> ModelState? {
-        return modelStates[name]
+
+    public func getModelState(name: String) -> ModelState? {
+        modelStates[name]
     }
-    
+
     private func addModel(url: URL) throws {
         var info = SdModelInfo()
         info.name = url.lastPathComponent
@@ -42,10 +42,10 @@ actor ModelManager {
         modelUrls[info.name] = url
         modelStates[info.name] = try ModelState(url: url)
     }
-    
+
     private func getModelAttention(_ url: URL) -> String? {
         let unetMetadataURL = url.appending(components: "Unet.mlmodelc", "metadata.json")
-        
+
         struct ModelMetadata: Decodable {
             let mlProgramOperationTypeHistogram: [String: Int]
         }

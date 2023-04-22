@@ -1,0 +1,4 @@
+--indent 4
+--disable trailingCommas
+--exclude "Sources/StableDiffusionProtos/*.pb.swift"
+--exclude "Sources/StableDiffusionProtos/*.grpc.swift"

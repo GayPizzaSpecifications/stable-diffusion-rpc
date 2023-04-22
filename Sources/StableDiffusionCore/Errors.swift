@@ -1,6 +1,6 @@
 import Foundation
 
-enum SdServerError: Error {
+public enum SdCoreError: Error {
     case modelNotLoaded
     case imageEncode
     case modelNotFound

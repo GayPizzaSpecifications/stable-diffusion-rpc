@@ -16,16 +16,21 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-argument-parser", from: "1.2.0")
     ],
     targets: [
+        .target(name: "StableDiffusionProtos", dependencies: [
+            .product(name: "SwiftProtobuf", package: "swift-protobuf"),
+            .product(name: "GRPC", package: "grpc-swift")
+        ]),
+        .target(name: "StableDiffusionCore", dependencies: [
+            .product(name: "StableDiffusion", package: "ml-stable-diffusion"),
+            .target(name: "StableDiffusionProtos")
+        ]),
         .executableTarget(name: "StableDiffusionServer", dependencies: [
             .product(name: "StableDiffusion", package: "ml-stable-diffusion"),
             .product(name: "SwiftProtobuf", package: "swift-protobuf"),
             .product(name: "GRPC", package: "grpc-swift"),
             .target(name: "StableDiffusionProtos"),
+            .target(name: "StableDiffusionCore"),
             .product(name: "ArgumentParser", package: "swift-argument-parser")
-        ]),
-        .target(name: "StableDiffusionProtos", dependencies: [
-            .product(name: "SwiftProtobuf", package: "swift-protobuf"),
-            .product(name: "GRPC", package: "grpc-swift")
         ]),
         .executableTarget(name: "TestStableDiffusionClient", dependencies: [
             .target(name: "StableDiffusionProtos"),

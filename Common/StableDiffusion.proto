@@ -1,0 +1,62 @@
+syntax = "proto3";
+package gay.pizza.stable.diffusion;
+
+option swift_prefix = "Sd";
+
+message ModelInfo {
+    string name = 1;
+    string attention = 2;
+}
+
+message Image {
+    bytes content = 1;
+}
+
+message ListModelsRequest {}
+message ListModelsResponse {
+    repeated ModelInfo models = 1;
+}
+
+message ReloadModelsRequest {}
+message ReloadModelsResponse {}
+
+enum Scheduler {
+    pndm = 0;
+    dpmSolverPlusPlus = 1;
+}
+
+enum ComputeUnits {
+    cpu = 0;
+    cpu_and_gpu = 1;
+    all = 2;
+    cpu_and_neural_engine = 3;
+}
+
+message LoadModelRequest {
+    string model_name = 1;
+    ComputeUnits compute_units = 2;
+    bool reduce_memory = 3;
+}
+
+message LoadModelResponse {}
+
+service ModelService {
+    rpc ListModels(ListModelsRequest) returns (ListModelsResponse);
+    rpc ReloadModels(ReloadModelsRequest) returns (ReloadModelsResponse);
+    rpc LoadModel(LoadModelRequest) returns (LoadModelResponse);
+}
+
+message GenerateImagesRequest {
+    string model_name = 1;
+    uint32 image_count = 2;
+    string prompt = 3;
+    string negative_prompt = 4;
+}
+
+message GenerateImagesResponse {
+    repeated Image images = 1;
+}
+
+service ImageGenerationService {
+    rpc GenerateImage(GenerateImagesRequest) returns (GenerateImagesResponse);
+}

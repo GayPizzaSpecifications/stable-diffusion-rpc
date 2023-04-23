@@ -380,9 +380,46 @@ public struct SdGenerateImagesRequest {
   /// Zero indicates that the seed should be random.
   public var seed: UInt32 = 0
 
+  ///*
+  /// An optional starting image to use for generation.
+  public var startingImage: SdImage {
+    get {return _startingImage ?? SdImage()}
+    set {_startingImage = newValue}
+  }
+  /// Returns true if `startingImage` has been explicitly set.
+  public var hasStartingImage: Bool {return self._startingImage != nil}
+  /// Clears the value of `startingImage`. Subsequent reads from it will return its default value.
+  public mutating func clearStartingImage() {self._startingImage = nil}
+
+  ///*
+  /// Indicates whether to enable the safety check network, if it is available.
+  public var enableSafetyCheck: Bool = false
+
+  ///*
+  /// The scheduler to use for generation.
+  /// The default is PNDM, if not specified.
+  public var scheduler: SdScheduler = .pndm
+
+  ///*
+  /// The guidance scale, which controls the influence the prompt has on the image.
+  /// If not specified, a reasonable default value is used.
+  public var guidanceScale: Float = 0
+
+  ///*
+  /// The strength of the image generation.
+  /// If not specified, a reasonable default value is used.
+  public var strength: Float = 0
+
+  ///*
+  /// The number of inference steps to perform.
+  /// If not specified, a reasonable default value is used.
+  public var stepCount: UInt32 = 0
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
+
+  fileprivate var _startingImage: SdImage? = nil
 }
 
 ///*
@@ -665,6 +702,12 @@ extension SdGenerateImagesRequest: SwiftProtobuf.Message, SwiftProtobuf._Message
     5: .same(proto: "prompt"),
     6: .standard(proto: "negative_prompt"),
     7: .same(proto: "seed"),
+    8: .standard(proto: "starting_image"),
+    9: .standard(proto: "enable_safety_check"),
+    10: .same(proto: "scheduler"),
+    11: .standard(proto: "guidance_scale"),
+    12: .same(proto: "strength"),
+    13: .standard(proto: "step_count"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -680,12 +723,22 @@ extension SdGenerateImagesRequest: SwiftProtobuf.Message, SwiftProtobuf._Message
       case 5: try { try decoder.decodeSingularStringField(value: &self.prompt) }()
       case 6: try { try decoder.decodeSingularStringField(value: &self.negativePrompt) }()
       case 7: try { try decoder.decodeSingularUInt32Field(value: &self.seed) }()
+      case 8: try { try decoder.decodeSingularMessageField(value: &self._startingImage) }()
+      case 9: try { try decoder.decodeSingularBoolField(value: &self.enableSafetyCheck) }()
+      case 10: try { try decoder.decodeSingularEnumField(value: &self.scheduler) }()
+      case 11: try { try decoder.decodeSingularFloatField(value: &self.guidanceScale) }()
+      case 12: try { try decoder.decodeSingularFloatField(value: &self.strength) }()
+      case 13: try { try decoder.decodeSingularUInt32Field(value: &self.stepCount) }()
       default: break
       }
     }
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
     if !self.modelName.isEmpty {
       try visitor.visitSingularStringField(value: self.modelName, fieldNumber: 1)
     }
@@ -707,6 +760,24 @@ extension SdGenerateImagesRequest: SwiftProtobuf.Message, SwiftProtobuf._Message
     if self.seed != 0 {
       try visitor.visitSingularUInt32Field(value: self.seed, fieldNumber: 7)
     }
+    try { if let v = self._startingImage {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 8)
+    } }()
+    if self.enableSafetyCheck != false {
+      try visitor.visitSingularBoolField(value: self.enableSafetyCheck, fieldNumber: 9)
+    }
+    if self.scheduler != .pndm {
+      try visitor.visitSingularEnumField(value: self.scheduler, fieldNumber: 10)
+    }
+    if self.guidanceScale != 0 {
+      try visitor.visitSingularFloatField(value: self.guidanceScale, fieldNumber: 11)
+    }
+    if self.strength != 0 {
+      try visitor.visitSingularFloatField(value: self.strength, fieldNumber: 12)
+    }
+    if self.stepCount != 0 {
+      try visitor.visitSingularUInt32Field(value: self.stepCount, fieldNumber: 13)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -718,6 +789,12 @@ extension SdGenerateImagesRequest: SwiftProtobuf.Message, SwiftProtobuf._Message
     if lhs.prompt != rhs.prompt {return false}
     if lhs.negativePrompt != rhs.negativePrompt {return false}
     if lhs.seed != rhs.seed {return false}
+    if lhs._startingImage != rhs._startingImage {return false}
+    if lhs.enableSafetyCheck != rhs.enableSafetyCheck {return false}
+    if lhs.scheduler != rhs.scheduler {return false}
+    if lhs.guidanceScale != rhs.guidanceScale {return false}
+    if lhs.strength != rhs.strength {return false}
+    if lhs.stepCount != rhs.stepCount {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

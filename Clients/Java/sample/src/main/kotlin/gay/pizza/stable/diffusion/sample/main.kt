@@ -1,12 +1,16 @@
 package gay.pizza.stable.diffusion.sample
 
+import com.google.protobuf.ByteString
 import gay.pizza.stable.diffusion.StableDiffusion
 import gay.pizza.stable.diffusion.StableDiffusion.GenerateImagesRequest
+import gay.pizza.stable.diffusion.StableDiffusion.Image
 import gay.pizza.stable.diffusion.StableDiffusion.ListModelsRequest
 import gay.pizza.stable.diffusion.StableDiffusion.LoadModelRequest
 import gay.pizza.stable.diffusion.StableDiffusionRpcClient
 import io.grpc.ManagedChannelBuilder
 import kotlin.io.path.Path
+import kotlin.io.path.exists
+import kotlin.io.path.readBytes
 import kotlin.io.path.writeBytes
 import kotlin.system.exitProcess
 
@@ -41,6 +45,8 @@ fun main() {
 
   println("generating images...")
 
+  val startingImagePath = Path("work/start.png")
+
   val request = GenerateImagesRequest.newBuilder().apply {
     modelName = model.name
     outputImageFormat = StableDiffusion.ImageFormat.png
@@ -48,6 +54,14 @@ fun main() {
     batchCount = 2
     prompt = "cat"
     negativePrompt = "bad, low quality, nsfw"
+    if (startingImagePath.exists()) {
+      val image = Image.newBuilder().apply {
+        format = StableDiffusion.ImageFormat.png
+        data = ByteString.copyFrom(startingImagePath.readBytes())
+      }.build()
+
+      startingImage = image
+    }
   }.build()
   val generateImagesResponse = client.imageGenerationServiceBlocking.generateImages(request)
 

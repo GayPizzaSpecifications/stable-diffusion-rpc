@@ -36,3 +36,20 @@ extension CGImage {
         }
     }
 }
+
+public extension SdImage {
+    func toCgImage() throws -> CGImage {
+        guard let dataProvider = CGDataProvider(data: data as CFData) else {
+            throw SdCoreError.imageDecodeFailed
+        }
+
+        if format == .png {
+            guard let image = CGImage(pngDataProviderSource: dataProvider, decode: nil, shouldInterpolate: false, intent: .defaultIntent) else {
+                throw SdCoreError.imageDecodeFailed
+            }
+            return image
+        } else {
+            throw SdCoreError.imageDecodeFailed
+        }
+    }
+}

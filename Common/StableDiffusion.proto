@@ -219,6 +219,40 @@ message GenerateImagesRequest {
      * Zero indicates that the seed should be random.
      */
     uint32 seed = 7;
+
+    /**
+     * An optional starting image to use for generation.
+     */
+    Image starting_image = 8;
+
+    /**
+     * Indicates whether to enable the safety check network, if it is available.
+     */
+    bool enable_safety_check = 9;
+
+    /**
+     * The scheduler to use for generation.
+     * The default is PNDM, if not specified.
+     */
+    Scheduler scheduler = 10;
+
+    /**
+     * The guidance scale, which controls the influence the prompt has on the image.
+     * If not specified, a reasonable default value is used.
+     */
+    float guidance_scale = 11;
+
+    /**
+     * The strength of the image generation.
+     * If not specified, a reasonable default value is used.
+     */
+    float strength = 12;
+
+    /**
+     * The number of inference steps to perform.
+     * If not specified, a reasonable default value is used.
+     */
+    uint32 step_count = 13;
 }
 
 /**

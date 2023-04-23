@@ -48,6 +48,31 @@ public actor ModelState {
         var pipelineConfig = StableDiffusionPipeline.Configuration(prompt: request.prompt)
         pipelineConfig.negativePrompt = request.negativePrompt
         pipelineConfig.imageCount = Int(request.batchSize)
+
+        if request.hasStartingImage {
+            pipelineConfig.startingImage = try request.startingImage.toCgImage()
+        }
+
+        if request.guidanceScale != 0.0 {
+            pipelineConfig.guidanceScale = request.guidanceScale
+        }
+
+        if request.stepCount != 0 {
+            pipelineConfig.stepCount = Int(request.stepCount)
+        }
+
+        if request.strength != 0.0 {
+            pipelineConfig.strength = request.strength
+        }
+
+        pipelineConfig.disableSafety = !request.enableSafetyCheck
+
+        switch request.scheduler {
+        case .pndm: pipelineConfig.schedulerType = .pndmScheduler
+        case .dpmSolverPlusPlus: pipelineConfig.schedulerType = .dpmSolverMultistepScheduler
+        default: pipelineConfig.schedulerType = .pndmScheduler
+        }
+
         var response = SdGenerateImagesResponse()
         for _ in 0 ..< request.batchCount {
             var seed = baseSeed

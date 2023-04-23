@@ -63,16 +63,22 @@ fun main() {
       startingImage = image
     }
   }.build()
-  for (update in client.imageGenerationServiceBlocking.generateImagesStreaming(request)) {
+  for ((updateIndex, update) in client.imageGenerationServiceBlocking.generateImagesStreaming(request).withIndex()) {
     if (update.hasBatchProgress()) {
       println("batch ${update.currentBatch} progress ${update.batchProgress.percentageComplete}%")
+      for ((index, image) in update.batchProgress.imagesList.withIndex()) {
+        val imageIndex = ((update.currentBatch - 1) * request.batchSize) + (index + 1)
+        println("image $imageIndex update $updateIndex format=${image.format.name} data=(${image.data.size()} bytes)")
+        val path = Path("work/intermediate_${imageIndex}_${updateIndex}.${image.format.name}")
+        path.writeBytes(image.data.toByteArray())
+      }
     }
 
     if (update.hasBatchCompleted()) {
       for ((index, image) in update.batchCompleted.imagesList.withIndex()) {
         val imageIndex = ((update.currentBatch - 1) * request.batchSize) + (index + 1)
         println("image $imageIndex format=${image.format.name} data=(${image.data.size()} bytes)")
-        val path = Path("work/image${imageIndex}.${image.format.name}")
+        val path = Path("work/final_${imageIndex}.${image.format.name}")
         path.writeBytes(image.data.toByteArray())
       }
     }

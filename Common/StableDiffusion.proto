@@ -253,6 +253,12 @@ message GenerateImagesRequest {
      * If not specified, a reasonable default value is used.
      */
     uint32 step_count = 13;
+
+    /**
+     * Indicates whether to send intermediate images
+     * while in streaming mode.
+     */
+    bool send_intermediates = 14;
 }
 
 /**
@@ -263,7 +269,7 @@ message GenerateImagesResponse {
      * The set of generated images by the Stable Diffusion pipeline.
      */
     repeated Image images = 1;
-    
+
     /**
      * The seeds that were used to generate the images.
      */
@@ -278,6 +284,14 @@ message GenerateImagesBatchProgressUpdate {
      * The percentage of this batch that is complete.
      */
     float percentage_complete = 1;
+
+    /**
+     * The current state of the generated images from this batch.
+     * These are not usually completed images, but partial images.
+     * These are only available if the request's send_intermediates
+     * parameter is set to true.
+     */
+    repeated Image images = 2;
 }
 
 /**

@@ -327,7 +327,8 @@ extension SdImageGenerationServiceClientProtocol {
     )
   }
 
-  /// Server streaming call to GenerateImagesStreaming
+  ///*
+  /// Generates images using a loaded model, providing updates along the way.
   ///
   /// - Parameters:
   ///   - request: Request to send to GenerateImagesStreaming.
@@ -713,6 +714,8 @@ public protocol SdImageGenerationServiceProvider: CallHandlerProvider {
   /// Generates images using a loaded model.
   func generateImages(request: SdGenerateImagesRequest, context: StatusOnlyCallContext) -> EventLoopFuture<SdGenerateImagesResponse>
 
+  ///*
+  /// Generates images using a loaded model, providing updates along the way.
   func generateImagesStreaming(request: SdGenerateImagesRequest, context: StreamingResponseCallContext<SdGenerateImagesStreamUpdate>) -> EventLoopFuture<GRPCStatus>
 }
 
@@ -770,6 +773,8 @@ public protocol SdImageGenerationServiceAsyncProvider: CallHandlerProvider {
     context: GRPCAsyncServerCallContext
   ) async throws -> SdGenerateImagesResponse
 
+  ///*
+  /// Generates images using a loaded model, providing updates along the way.
   @Sendable func generateImagesStreaming(
     request: SdGenerateImagesRequest,
     responseStream: GRPCAsyncResponseStreamWriter<SdGenerateImagesStreamUpdate>,

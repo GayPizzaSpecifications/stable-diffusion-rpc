@@ -84,18 +84,22 @@ public actor ModelState {
             pipelineConfig.seed = seed
             let cgImages = try pipeline.generateImages(configuration: pipelineConfig, progressHandler: { progress in
                 let percentage = (Float(progress.step) / Float(progress.stepCount)) * 100.0
+                var images: [SdImage]?
+                if request.sendIntermediates {
+                    images = try? cgImagesToImages(request: request, progress.currentImages)
+                }
+                let finalImages = images
                 Task {
-                    do {
-                        try await stream.send(.with { item in
-                            item.currentBatch = batch
-                            item.batchProgress = .with { update in
-                                update.percentageComplete = percentage
+                    try await stream.send(.with { item in
+                        item.currentBatch = batch
+                        item.batchProgress = .with { update in
+                            update.percentageComplete = percentage
+                            if let finalImages {
+                                update.images = finalImages
                             }
-                            item.overallPercentageComplete = currentOverallPercentage(percentage)
-                        })
-                    } catch {
-                        fatalError(error.localizedDescription)
-                    }
+                        }
+                        item.overallPercentageComplete = currentOverallPercentage(percentage)
+                    })
                 }
                 return true
             })

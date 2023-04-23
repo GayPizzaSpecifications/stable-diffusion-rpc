@@ -415,6 +415,11 @@ public struct SdGenerateImagesRequest {
   /// If not specified, a reasonable default value is used.
   public var stepCount: UInt32 = 0
 
+  ///*
+  /// Indicates whether to send intermediate images
+  /// while in streaming mode.
+  public var sendIntermediates: Bool = false
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
@@ -442,25 +447,42 @@ public struct SdGenerateImagesResponse {
   public init() {}
 }
 
+///*
+/// Represents a progress update for an image generation batch.
 public struct SdGenerateImagesBatchProgressUpdate {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
+  ///*
+  /// The percentage of this batch that is complete.
   public var percentageComplete: Float = 0
+
+  ///*
+  /// The current state of the generated images from this batch.
+  /// These are not usually completed images, but partial images.
+  /// These are only available if the request's send_intermediates
+  /// parameter is set to true.
+  public var images: [SdImage] = []
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
 }
 
+///*
+/// Represents a completion of an image generation batch.
 public struct SdGenerateImagesBatchCompletedUpdate {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
+  ///*
+  /// The generated images from this batch.
   public var images: [SdImage] = []
 
+  ///*
+  /// The seed for this batch.
   public var seed: UInt32 = 0
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
@@ -475,10 +497,16 @@ public struct SdGenerateImagesStreamUpdate {
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
+  ///*
+  /// The current batch number that is processing.
   public var currentBatch: UInt32 = 0
 
+  ///*
+  /// An update to the image generation pipeline.
   public var update: SdGenerateImagesStreamUpdate.OneOf_Update? = nil
 
+  ///*
+  /// Batch progress update.
   public var batchProgress: SdGenerateImagesBatchProgressUpdate {
     get {
       if case .batchProgress(let v)? = update {return v}
@@ -487,6 +515,8 @@ public struct SdGenerateImagesStreamUpdate {
     set {update = .batchProgress(newValue)}
   }
 
+  ///*
+  /// Batch completion update.
   public var batchCompleted: SdGenerateImagesBatchCompletedUpdate {
     get {
       if case .batchCompleted(let v)? = update {return v}
@@ -499,8 +529,14 @@ public struct SdGenerateImagesStreamUpdate {
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
+  ///*
+  /// An update to the image generation pipeline.
   public enum OneOf_Update: Equatable {
+    ///*
+    /// Batch progress update.
     case batchProgress(SdGenerateImagesBatchProgressUpdate)
+    ///*
+    /// Batch completion update.
     case batchCompleted(SdGenerateImagesBatchCompletedUpdate)
 
   #if !swift(>=4.1)
@@ -796,6 +832,7 @@ extension SdGenerateImagesRequest: SwiftProtobuf.Message, SwiftProtobuf._Message
     11: .standard(proto: "guidance_scale"),
     12: .same(proto: "strength"),
     13: .standard(proto: "step_count"),
+    14: .standard(proto: "send_intermediates"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -817,6 +854,7 @@ extension SdGenerateImagesRequest: SwiftProtobuf.Message, SwiftProtobuf._Message
       case 11: try { try decoder.decodeSingularFloatField(value: &self.guidanceScale) }()
       case 12: try { try decoder.decodeSingularFloatField(value: &self.strength) }()
       case 13: try { try decoder.decodeSingularUInt32Field(value: &self.stepCount) }()
+      case 14: try { try decoder.decodeSingularBoolField(value: &self.sendIntermediates) }()
       default: break
       }
     }
@@ -866,6 +904,9 @@ extension SdGenerateImagesRequest: SwiftProtobuf.Message, SwiftProtobuf._Message
     if self.stepCount != 0 {
       try visitor.visitSingularUInt32Field(value: self.stepCount, fieldNumber: 13)
     }
+    if self.sendIntermediates != false {
+      try visitor.visitSingularBoolField(value: self.sendIntermediates, fieldNumber: 14)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -883,6 +924,7 @@ extension SdGenerateImagesRequest: SwiftProtobuf.Message, SwiftProtobuf._Message
     if lhs.guidanceScale != rhs.guidanceScale {return false}
     if lhs.strength != rhs.strength {return false}
     if lhs.stepCount != rhs.stepCount {return false}
+    if lhs.sendIntermediates != rhs.sendIntermediates {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -930,6 +972,7 @@ extension SdGenerateImagesBatchProgressUpdate: SwiftProtobuf.Message, SwiftProto
   public static let protoMessageName: String = _protobuf_package + ".GenerateImagesBatchProgressUpdate"
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "percentage_complete"),
+    2: .same(proto: "images"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -939,6 +982,7 @@ extension SdGenerateImagesBatchProgressUpdate: SwiftProtobuf.Message, SwiftProto
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularFloatField(value: &self.percentageComplete) }()
+      case 2: try { try decoder.decodeRepeatedMessageField(value: &self.images) }()
       default: break
       }
     }
@@ -948,11 +992,15 @@ extension SdGenerateImagesBatchProgressUpdate: SwiftProtobuf.Message, SwiftProto
     if self.percentageComplete != 0 {
       try visitor.visitSingularFloatField(value: self.percentageComplete, fieldNumber: 1)
     }
+    if !self.images.isEmpty {
+      try visitor.visitRepeatedMessageField(value: self.images, fieldNumber: 2)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: SdGenerateImagesBatchProgressUpdate, rhs: SdGenerateImagesBatchProgressUpdate) -> Bool {
     if lhs.percentageComplete != rhs.percentageComplete {return false}
+    if lhs.images != rhs.images {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

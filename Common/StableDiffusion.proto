@@ -270,12 +270,28 @@ message GenerateImagesResponse {
     repeated uint32 seeds = 2;
 }
 
+/**
+ * Represents a progress update for an image generation batch.
+ */
 message GenerateImagesBatchProgressUpdate {
+    /**
+     * The percentage of this batch that is complete.
+     */
     float percentage_complete = 1;
 }
 
+/**
+ * Represents a completion of an image generation batch.
+ */
 message GenerateImagesBatchCompletedUpdate {
+    /**
+     * The generated images from this batch.
+     */
     repeated Image images = 1;
+
+    /**
+     * The seed for this batch.
+     */
     uint32 seed = 2;
 }
 
@@ -283,10 +299,23 @@ message GenerateImagesBatchCompletedUpdate {
  * Represents a continuous update from an image generation stream.
  */
 message GenerateImagesStreamUpdate {
+    /**
+     * The current batch number that is processing.
+     */
     uint32 current_batch = 1;
 
+    /**
+     * An update to the image generation pipeline.
+     */
     oneof update {
+        /**
+         * Batch progress update.
+         */
         GenerateImagesBatchProgressUpdate batch_progress = 2;
+
+        /**
+         * Batch completion update.
+         */
         GenerateImagesBatchCompletedUpdate batch_completed = 3;
     }
 
@@ -302,5 +331,8 @@ service ImageGenerationService {
      */
     rpc GenerateImages(GenerateImagesRequest) returns (GenerateImagesResponse);
 
+    /**
+     * Generates images using a loaded model, providing updates along the way.
+     */
     rpc GenerateImagesStreaming(GenerateImagesRequest) returns (stream GenerateImagesStreamUpdate);
 }

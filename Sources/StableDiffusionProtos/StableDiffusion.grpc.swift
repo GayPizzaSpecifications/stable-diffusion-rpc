@@ -26,6 +26,9 @@ import NIOConcurrencyHelpers
 import SwiftProtobuf
 
 
+///*
+/// The model service, for management and loading of models.
+///
 /// Usage: instantiate `SdModelServiceClient`, then call methods of this protocol to make API calls.
 public protocol SdModelServiceClientProtocol: GRPCClient {
   var serviceName: String { get }
@@ -35,11 +38,6 @@ public protocol SdModelServiceClientProtocol: GRPCClient {
     _ request: SdListModelsRequest,
     callOptions: CallOptions?
   ) -> UnaryCall<SdListModelsRequest, SdListModelsResponse>
-
-  func reloadModels(
-    _ request: SdReloadModelsRequest,
-    callOptions: CallOptions?
-  ) -> UnaryCall<SdReloadModelsRequest, SdReloadModelsResponse>
 
   func loadModel(
     _ request: SdLoadModelRequest,
@@ -52,7 +50,9 @@ extension SdModelServiceClientProtocol {
     return "gay.pizza.stable.diffusion.ModelService"
   }
 
-  /// Unary call to ListModels
+  ///*
+  /// Lists the available models on the host.
+  /// This will return both models that are currently loaded, and models that are not yet loaded.
   ///
   /// - Parameters:
   ///   - request: Request to send to ListModels.
@@ -70,25 +70,8 @@ extension SdModelServiceClientProtocol {
     )
   }
 
-  /// Unary call to ReloadModels
-  ///
-  /// - Parameters:
-  ///   - request: Request to send to ReloadModels.
-  ///   - callOptions: Call options.
-  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
-  public func reloadModels(
-    _ request: SdReloadModelsRequest,
-    callOptions: CallOptions? = nil
-  ) -> UnaryCall<SdReloadModelsRequest, SdReloadModelsResponse> {
-    return self.makeUnaryCall(
-      path: SdModelServiceClientMetadata.Methods.reloadModels.path,
-      request: request,
-      callOptions: callOptions ?? self.defaultCallOptions,
-      interceptors: self.interceptors?.makeReloadModelsInterceptors() ?? []
-    )
-  }
-
-  /// Unary call to LoadModel
+  ///*
+  /// Loads a model onto a compute unit.
   ///
   /// - Parameters:
   ///   - request: Request to send to LoadModel.
@@ -167,6 +150,8 @@ public struct SdModelServiceNIOClient: SdModelServiceClientProtocol {
 }
 
 #if compiler(>=5.6)
+///*
+/// The model service, for management and loading of models.
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 public protocol SdModelServiceAsyncClientProtocol: GRPCClient {
   static var serviceDescriptor: GRPCServiceDescriptor { get }
@@ -176,11 +161,6 @@ public protocol SdModelServiceAsyncClientProtocol: GRPCClient {
     _ request: SdListModelsRequest,
     callOptions: CallOptions?
   ) -> GRPCAsyncUnaryCall<SdListModelsRequest, SdListModelsResponse>
-
-  func makeReloadModelsCall(
-    _ request: SdReloadModelsRequest,
-    callOptions: CallOptions?
-  ) -> GRPCAsyncUnaryCall<SdReloadModelsRequest, SdReloadModelsResponse>
 
   func makeLoadModelCall(
     _ request: SdLoadModelRequest,
@@ -210,18 +190,6 @@ extension SdModelServiceAsyncClientProtocol {
     )
   }
 
-  public func makeReloadModelsCall(
-    _ request: SdReloadModelsRequest,
-    callOptions: CallOptions? = nil
-  ) -> GRPCAsyncUnaryCall<SdReloadModelsRequest, SdReloadModelsResponse> {
-    return self.makeAsyncUnaryCall(
-      path: SdModelServiceClientMetadata.Methods.reloadModels.path,
-      request: request,
-      callOptions: callOptions ?? self.defaultCallOptions,
-      interceptors: self.interceptors?.makeReloadModelsInterceptors() ?? []
-    )
-  }
-
   public func makeLoadModelCall(
     _ request: SdLoadModelRequest,
     callOptions: CallOptions? = nil
@@ -246,18 +214,6 @@ extension SdModelServiceAsyncClientProtocol {
       request: request,
       callOptions: callOptions ?? self.defaultCallOptions,
       interceptors: self.interceptors?.makeListModelsInterceptors() ?? []
-    )
-  }
-
-  public func reloadModels(
-    _ request: SdReloadModelsRequest,
-    callOptions: CallOptions? = nil
-  ) async throws -> SdReloadModelsResponse {
-    return try await self.performAsyncUnaryCall(
-      path: SdModelServiceClientMetadata.Methods.reloadModels.path,
-      request: request,
-      callOptions: callOptions ?? self.defaultCallOptions,
-      interceptors: self.interceptors?.makeReloadModelsInterceptors() ?? []
     )
   }
 
@@ -298,9 +254,6 @@ public protocol SdModelServiceClientInterceptorFactoryProtocol: GRPCSendable {
   /// - Returns: Interceptors to use when invoking 'listModels'.
   func makeListModelsInterceptors() -> [ClientInterceptor<SdListModelsRequest, SdListModelsResponse>]
 
-  /// - Returns: Interceptors to use when invoking 'reloadModels'.
-  func makeReloadModelsInterceptors() -> [ClientInterceptor<SdReloadModelsRequest, SdReloadModelsResponse>]
-
   /// - Returns: Interceptors to use when invoking 'loadModel'.
   func makeLoadModelInterceptors() -> [ClientInterceptor<SdLoadModelRequest, SdLoadModelResponse>]
 }
@@ -311,7 +264,6 @@ public enum SdModelServiceClientMetadata {
     fullName: "gay.pizza.stable.diffusion.ModelService",
     methods: [
       SdModelServiceClientMetadata.Methods.listModels,
-      SdModelServiceClientMetadata.Methods.reloadModels,
       SdModelServiceClientMetadata.Methods.loadModel,
     ]
   )
@@ -323,12 +275,6 @@ public enum SdModelServiceClientMetadata {
       type: GRPCCallType.unary
     )
 
-    public static let reloadModels = GRPCMethodDescriptor(
-      name: "ReloadModels",
-      path: "/gay.pizza.stable.diffusion.ModelService/ReloadModels",
-      type: GRPCCallType.unary
-    )
-
     public static let loadModel = GRPCMethodDescriptor(
       name: "LoadModel",
       path: "/gay.pizza.stable.diffusion.ModelService/LoadModel",
@@ -337,12 +283,15 @@ public enum SdModelServiceClientMetadata {
   }
 }
 
+///*
+/// The image generation service, for generating images from loaded models.
+///
 /// Usage: instantiate `SdImageGenerationServiceClient`, then call methods of this protocol to make API calls.
 public protocol SdImageGenerationServiceClientProtocol: GRPCClient {
   var serviceName: String { get }
   var interceptors: SdImageGenerationServiceClientInterceptorFactoryProtocol? { get }
 
-  func generateImage(
+  func generateImages(
     _ request: SdGenerateImagesRequest,
     callOptions: CallOptions?
   ) -> UnaryCall<SdGenerateImagesRequest, SdGenerateImagesResponse>
@@ -353,21 +302,22 @@ extension SdImageGenerationServiceClientProtocol {
     return "gay.pizza.stable.diffusion.ImageGenerationService"
   }
 
-  /// Unary call to GenerateImage
+  ///*
+  /// Generates images using a loaded model.
   ///
   /// - Parameters:
-  ///   - request: Request to send to GenerateImage.
+  ///   - request: Request to send to GenerateImages.
   ///   - callOptions: Call options.
   /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
-  public func generateImage(
+  public func generateImages(
     _ request: SdGenerateImagesRequest,
     callOptions: CallOptions? = nil
   ) -> UnaryCall<SdGenerateImagesRequest, SdGenerateImagesResponse> {
     return self.makeUnaryCall(
-      path: SdImageGenerationServiceClientMetadata.Methods.generateImage.path,
+      path: SdImageGenerationServiceClientMetadata.Methods.generateImages.path,
       request: request,
       callOptions: callOptions ?? self.defaultCallOptions,
-      interceptors: self.interceptors?.makeGenerateImageInterceptors() ?? []
+      interceptors: self.interceptors?.makeGenerateImagesInterceptors() ?? []
     )
   }
 }
@@ -432,12 +382,14 @@ public struct SdImageGenerationServiceNIOClient: SdImageGenerationServiceClientP
 }
 
 #if compiler(>=5.6)
+///*
+/// The image generation service, for generating images from loaded models.
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 public protocol SdImageGenerationServiceAsyncClientProtocol: GRPCClient {
   static var serviceDescriptor: GRPCServiceDescriptor { get }
   var interceptors: SdImageGenerationServiceClientInterceptorFactoryProtocol? { get }
 
-  func makeGenerateImageCall(
+  func makeGenerateImagesCall(
     _ request: SdGenerateImagesRequest,
     callOptions: CallOptions?
   ) -> GRPCAsyncUnaryCall<SdGenerateImagesRequest, SdGenerateImagesResponse>
@@ -453,30 +405,30 @@ extension SdImageGenerationServiceAsyncClientProtocol {
     return nil
   }
 
-  public func makeGenerateImageCall(
+  public func makeGenerateImagesCall(
     _ request: SdGenerateImagesRequest,
     callOptions: CallOptions? = nil
   ) -> GRPCAsyncUnaryCall<SdGenerateImagesRequest, SdGenerateImagesResponse> {
     return self.makeAsyncUnaryCall(
-      path: SdImageGenerationServiceClientMetadata.Methods.generateImage.path,
+      path: SdImageGenerationServiceClientMetadata.Methods.generateImages.path,
       request: request,
       callOptions: callOptions ?? self.defaultCallOptions,
-      interceptors: self.interceptors?.makeGenerateImageInterceptors() ?? []
+      interceptors: self.interceptors?.makeGenerateImagesInterceptors() ?? []
     )
   }
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 extension SdImageGenerationServiceAsyncClientProtocol {
-  public func generateImage(
+  public func generateImages(
     _ request: SdGenerateImagesRequest,
     callOptions: CallOptions? = nil
   ) async throws -> SdGenerateImagesResponse {
     return try await self.performAsyncUnaryCall(
-      path: SdImageGenerationServiceClientMetadata.Methods.generateImage.path,
+      path: SdImageGenerationServiceClientMetadata.Methods.generateImages.path,
       request: request,
       callOptions: callOptions ?? self.defaultCallOptions,
-      interceptors: self.interceptors?.makeGenerateImageInterceptors() ?? []
+      interceptors: self.interceptors?.makeGenerateImagesInterceptors() ?? []
     )
   }
 }
@@ -502,8 +454,8 @@ public struct SdImageGenerationServiceAsyncClient: SdImageGenerationServiceAsync
 
 public protocol SdImageGenerationServiceClientInterceptorFactoryProtocol: GRPCSendable {
 
-  /// - Returns: Interceptors to use when invoking 'generateImage'.
-  func makeGenerateImageInterceptors() -> [ClientInterceptor<SdGenerateImagesRequest, SdGenerateImagesResponse>]
+  /// - Returns: Interceptors to use when invoking 'generateImages'.
+  func makeGenerateImagesInterceptors() -> [ClientInterceptor<SdGenerateImagesRequest, SdGenerateImagesResponse>]
 }
 
 public enum SdImageGenerationServiceClientMetadata {
@@ -511,27 +463,33 @@ public enum SdImageGenerationServiceClientMetadata {
     name: "ImageGenerationService",
     fullName: "gay.pizza.stable.diffusion.ImageGenerationService",
     methods: [
-      SdImageGenerationServiceClientMetadata.Methods.generateImage,
+      SdImageGenerationServiceClientMetadata.Methods.generateImages,
     ]
   )
 
   public enum Methods {
-    public static let generateImage = GRPCMethodDescriptor(
-      name: "GenerateImage",
-      path: "/gay.pizza.stable.diffusion.ImageGenerationService/GenerateImage",
+    public static let generateImages = GRPCMethodDescriptor(
+      name: "GenerateImages",
+      path: "/gay.pizza.stable.diffusion.ImageGenerationService/GenerateImages",
       type: GRPCCallType.unary
     )
   }
 }
 
+///*
+/// The model service, for management and loading of models.
+///
 /// To build a server, implement a class that conforms to this protocol.
 public protocol SdModelServiceProvider: CallHandlerProvider {
   var interceptors: SdModelServiceServerInterceptorFactoryProtocol? { get }
 
+  ///*
+  /// Lists the available models on the host.
+  /// This will return both models that are currently loaded, and models that are not yet loaded.
   func listModels(request: SdListModelsRequest, context: StatusOnlyCallContext) -> EventLoopFuture<SdListModelsResponse>
 
-  func reloadModels(request: SdReloadModelsRequest, context: StatusOnlyCallContext) -> EventLoopFuture<SdReloadModelsResponse>
-
+  ///*
+  /// Loads a model onto a compute unit.
   func loadModel(request: SdLoadModelRequest, context: StatusOnlyCallContext) -> EventLoopFuture<SdLoadModelResponse>
 }
 
@@ -556,15 +514,6 @@ extension SdModelServiceProvider {
         userFunction: self.listModels(request:context:)
       )
 
-    case "ReloadModels":
-      return UnaryServerHandler(
-        context: context,
-        requestDeserializer: ProtobufDeserializer<SdReloadModelsRequest>(),
-        responseSerializer: ProtobufSerializer<SdReloadModelsResponse>(),
-        interceptors: self.interceptors?.makeReloadModelsInterceptors() ?? [],
-        userFunction: self.reloadModels(request:context:)
-      )
-
     case "LoadModel":
       return UnaryServerHandler(
         context: context,
@@ -582,22 +531,25 @@ extension SdModelServiceProvider {
 
 #if compiler(>=5.6)
 
+///*
+/// The model service, for management and loading of models.
+///
 /// To implement a server, implement an object which conforms to this protocol.
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 public protocol SdModelServiceAsyncProvider: CallHandlerProvider {
   static var serviceDescriptor: GRPCServiceDescriptor { get }
   var interceptors: SdModelServiceServerInterceptorFactoryProtocol? { get }
 
+  ///*
+  /// Lists the available models on the host.
+  /// This will return both models that are currently loaded, and models that are not yet loaded.
   @Sendable func listModels(
     request: SdListModelsRequest,
     context: GRPCAsyncServerCallContext
   ) async throws -> SdListModelsResponse
 
-  @Sendable func reloadModels(
-    request: SdReloadModelsRequest,
-    context: GRPCAsyncServerCallContext
-  ) async throws -> SdReloadModelsResponse
-
+  ///*
+  /// Loads a model onto a compute unit.
   @Sendable func loadModel(
     request: SdLoadModelRequest,
     context: GRPCAsyncServerCallContext
@@ -632,15 +584,6 @@ extension SdModelServiceAsyncProvider {
         wrapping: self.listModels(request:context:)
       )
 
-    case "ReloadModels":
-      return GRPCAsyncServerHandler(
-        context: context,
-        requestDeserializer: ProtobufDeserializer<SdReloadModelsRequest>(),
-        responseSerializer: ProtobufSerializer<SdReloadModelsResponse>(),
-        interceptors: self.interceptors?.makeReloadModelsInterceptors() ?? [],
-        wrapping: self.reloadModels(request:context:)
-      )
-
     case "LoadModel":
       return GRPCAsyncServerHandler(
         context: context,
@@ -664,10 +607,6 @@ public protocol SdModelServiceServerInterceptorFactoryProtocol {
   ///   Defaults to calling `self.makeInterceptors()`.
   func makeListModelsInterceptors() -> [ServerInterceptor<SdListModelsRequest, SdListModelsResponse>]
 
-  /// - Returns: Interceptors to use when handling 'reloadModels'.
-  ///   Defaults to calling `self.makeInterceptors()`.
-  func makeReloadModelsInterceptors() -> [ServerInterceptor<SdReloadModelsRequest, SdReloadModelsResponse>]
-
   /// - Returns: Interceptors to use when handling 'loadModel'.
   ///   Defaults to calling `self.makeInterceptors()`.
   func makeLoadModelInterceptors() -> [ServerInterceptor<SdLoadModelRequest, SdLoadModelResponse>]
@@ -679,7 +618,6 @@ public enum SdModelServiceServerMetadata {
     fullName: "gay.pizza.stable.diffusion.ModelService",
     methods: [
       SdModelServiceServerMetadata.Methods.listModels,
-      SdModelServiceServerMetadata.Methods.reloadModels,
       SdModelServiceServerMetadata.Methods.loadModel,
     ]
   )
@@ -691,12 +629,6 @@ public enum SdModelServiceServerMetadata {
       type: GRPCCallType.unary
     )
 
-    public static let reloadModels = GRPCMethodDescriptor(
-      name: "ReloadModels",
-      path: "/gay.pizza.stable.diffusion.ModelService/ReloadModels",
-      type: GRPCCallType.unary
-    )
-
     public static let loadModel = GRPCMethodDescriptor(
       name: "LoadModel",
       path: "/gay.pizza.stable.diffusion.ModelService/LoadModel",
@@ -704,11 +636,16 @@ public enum SdModelServiceServerMetadata {
     )
   }
 }
+///*
+/// The image generation service, for generating images from loaded models.
+///
 /// To build a server, implement a class that conforms to this protocol.
 public protocol SdImageGenerationServiceProvider: CallHandlerProvider {
   var interceptors: SdImageGenerationServiceServerInterceptorFactoryProtocol? { get }
 
-  func generateImage(request: SdGenerateImagesRequest, context: StatusOnlyCallContext) -> EventLoopFuture<SdGenerateImagesResponse>
+  ///*
+  /// Generates images using a loaded model.
+  func generateImages(request: SdGenerateImagesRequest, context: StatusOnlyCallContext) -> EventLoopFuture<SdGenerateImagesResponse>
 }
 
 extension SdImageGenerationServiceProvider {
@@ -723,13 +660,13 @@ extension SdImageGenerationServiceProvider {
     context: CallHandlerContext
   ) -> GRPCServerHandlerProtocol? {
     switch name {
-    case "GenerateImage":
+    case "GenerateImages":
       return UnaryServerHandler(
         context: context,
         requestDeserializer: ProtobufDeserializer<SdGenerateImagesRequest>(),
         responseSerializer: ProtobufSerializer<SdGenerateImagesResponse>(),
-        interceptors: self.interceptors?.makeGenerateImageInterceptors() ?? [],
-        userFunction: self.generateImage(request:context:)
+        interceptors: self.interceptors?.makeGenerateImagesInterceptors() ?? [],
+        userFunction: self.generateImages(request:context:)
       )
 
     default:
@@ -740,13 +677,18 @@ extension SdImageGenerationServiceProvider {
 
 #if compiler(>=5.6)
 
+///*
+/// The image generation service, for generating images from loaded models.
+///
 /// To implement a server, implement an object which conforms to this protocol.
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 public protocol SdImageGenerationServiceAsyncProvider: CallHandlerProvider {
   static var serviceDescriptor: GRPCServiceDescriptor { get }
   var interceptors: SdImageGenerationServiceServerInterceptorFactoryProtocol? { get }
 
-  @Sendable func generateImage(
+  ///*
+  /// Generates images using a loaded model.
+  @Sendable func generateImages(
     request: SdGenerateImagesRequest,
     context: GRPCAsyncServerCallContext
   ) async throws -> SdGenerateImagesResponse
@@ -771,13 +713,13 @@ extension SdImageGenerationServiceAsyncProvider {
     context: CallHandlerContext
   ) -> GRPCServerHandlerProtocol? {
     switch name {
-    case "GenerateImage":
+    case "GenerateImages":
       return GRPCAsyncServerHandler(
         context: context,
         requestDeserializer: ProtobufDeserializer<SdGenerateImagesRequest>(),
         responseSerializer: ProtobufSerializer<SdGenerateImagesResponse>(),
-        interceptors: self.interceptors?.makeGenerateImageInterceptors() ?? [],
-        wrapping: self.generateImage(request:context:)
+        interceptors: self.interceptors?.makeGenerateImagesInterceptors() ?? [],
+        wrapping: self.generateImages(request:context:)
       )
 
     default:
@@ -790,9 +732,9 @@ extension SdImageGenerationServiceAsyncProvider {
 
 public protocol SdImageGenerationServiceServerInterceptorFactoryProtocol {
 
-  /// - Returns: Interceptors to use when handling 'generateImage'.
+  /// - Returns: Interceptors to use when handling 'generateImages'.
   ///   Defaults to calling `self.makeInterceptors()`.
-  func makeGenerateImageInterceptors() -> [ServerInterceptor<SdGenerateImagesRequest, SdGenerateImagesResponse>]
+  func makeGenerateImagesInterceptors() -> [ServerInterceptor<SdGenerateImagesRequest, SdGenerateImagesResponse>]
 }
 
 public enum SdImageGenerationServiceServerMetadata {
@@ -800,14 +742,14 @@ public enum SdImageGenerationServiceServerMetadata {
     name: "ImageGenerationService",
     fullName: "gay.pizza.stable.diffusion.ImageGenerationService",
     methods: [
-      SdImageGenerationServiceServerMetadata.Methods.generateImage,
+      SdImageGenerationServiceServerMetadata.Methods.generateImages,
     ]
   )
 
   public enum Methods {
-    public static let generateImage = GRPCMethodDescriptor(
-      name: "GenerateImage",
-      path: "/gay.pizza.stable.diffusion.ImageGenerationService/GenerateImage",
+    public static let generateImages = GRPCMethodDescriptor(
+      name: "GenerateImages",
+      path: "/gay.pizza.stable.diffusion.ImageGenerationService/GenerateImages",
       type: GRPCCallType.unary
     )
   }

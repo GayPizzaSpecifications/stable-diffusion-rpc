@@ -16,7 +16,7 @@ struct ServerCommand: ParsableCommand {
         let semaphore = DispatchSemaphore(value: 0)
         Task {
             do {
-                try await modelManager.reloadModels()
+                try await modelManager.reloadAvailableModels()
             } catch {
                 ServerCommand.exit(withError: error)
             }

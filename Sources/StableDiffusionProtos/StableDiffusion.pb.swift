@@ -7,6 +7,9 @@
 // For information on using the generated types, please see the documentation:
 //   https://github.com/apple/swift-protobuf/
 
+///*
+/// Stable Diffusion RPC service for Apple Platforms.
+
 import Foundation
 import SwiftProtobuf
 
@@ -20,9 +23,67 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
   typealias Version = _2
 }
 
+///*
+/// Represents the model attention. Model attention has to do with how the model is encoded, and
+/// can determine what compute units are able to support a particular model.
+public enum SdModelAttention: SwiftProtobuf.Enum {
+  public typealias RawValue = Int
+
+  ///*
+  /// The model is an original attention type. It can be loaded only onto CPU & GPU compute units.
+  case original // = 0
+
+  ///*
+  /// The model is a split-ein-sum attention type. It can be loaded onto all compute units,
+  /// including the Apple Neural Engine.
+  case splitEinSum // = 1
+  case UNRECOGNIZED(Int)
+
+  public init() {
+    self = .original
+  }
+
+  public init?(rawValue: Int) {
+    switch rawValue {
+    case 0: self = .original
+    case 1: self = .splitEinSum
+    default: self = .UNRECOGNIZED(rawValue)
+    }
+  }
+
+  public var rawValue: Int {
+    switch self {
+    case .original: return 0
+    case .splitEinSum: return 1
+    case .UNRECOGNIZED(let i): return i
+    }
+  }
+
+}
+
+#if swift(>=4.2)
+
+extension SdModelAttention: CaseIterable {
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  public static var allCases: [SdModelAttention] = [
+    .original,
+    .splitEinSum,
+  ]
+}
+
+#endif  // swift(>=4.2)
+
+///*
+/// Represents the schedulers that are used to sample images.
 public enum SdScheduler: SwiftProtobuf.Enum {
   public typealias RawValue = Int
+
+  ///*
+  /// The PNDM (Pseudo numerical methods for diffusion models) scheduler.
   case pndm // = 0
+
+  ///*
+  /// The DPM-Solver++ scheduler.
   case dpmSolverPlusPlus // = 1
   case UNRECOGNIZED(Int)
 
@@ -60,11 +121,25 @@ extension SdScheduler: CaseIterable {
 
 #endif  // swift(>=4.2)
 
+///*
+/// Represents a specifier for what compute units are available for ML tasks.
 public enum SdComputeUnits: SwiftProtobuf.Enum {
   public typealias RawValue = Int
+
+  ///*
+  /// The CPU as a singular compute unit.
   case cpu // = 0
+
+  ///*
+  /// The CPU & GPU combined into a singular compute unit.
   case cpuAndGpu // = 1
+
+  ///*
+  /// Allow the usage of all compute units. CoreML will decided where the model is loaded.
   case all // = 2
+
+  ///*
+  /// The CPU & Neural Engine combined into a singular compute unit.
   case cpuAndNeuralEngine // = 3
   case UNRECOGNIZED(Int)
 
@@ -108,34 +183,108 @@ extension SdComputeUnits: CaseIterable {
 
 #endif  // swift(>=4.2)
 
+///*
+/// Represents the format of an image.
+public enum SdImageFormat: SwiftProtobuf.Enum {
+  public typealias RawValue = Int
+
+  ///*
+  /// The PNG image format.
+  case png // = 0
+  case UNRECOGNIZED(Int)
+
+  public init() {
+    self = .png
+  }
+
+  public init?(rawValue: Int) {
+    switch rawValue {
+    case 0: self = .png
+    default: self = .UNRECOGNIZED(rawValue)
+    }
+  }
+
+  public var rawValue: Int {
+    switch self {
+    case .png: return 0
+    case .UNRECOGNIZED(let i): return i
+    }
+  }
+
+}
+
+#if swift(>=4.2)
+
+extension SdImageFormat: CaseIterable {
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  public static var allCases: [SdImageFormat] = [
+    .png,
+  ]
+}
+
+#endif  // swift(>=4.2)
+
+///*
+/// Represents information about an available model.
+/// The primary key of a model is it's 'name' field.
 public struct SdModelInfo {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
+  ///*
+  /// The name of the available model. Note that within the context of a single RPC server,
+  /// the name of a model is a unique identifier. This may not be true when utilizing a cluster or
+  /// load balanced server, so keep that in mind.
   public var name: String = String()
 
-  public var attention: String = String()
+  ///*
+  /// The attention of the model. Model attention determines what compute units can be used to
+  /// load the model and make predictions.
+  public var attention: SdModelAttention = .original
 
+  ///*
+  /// Whether the model is currently loaded onto an available compute unit.
   public var isLoaded: Bool = false
+
+  ///*
+  /// The compute unit that the model is currently loaded into, if it is loaded to one at all.
+  /// When is_loaded is false, the value of this field should be null.
+  public var loadedComputeUnits: SdComputeUnits = .cpu
+
+  ///*
+  /// The compute units that this model supports using.
+  public var supportedComputeUnits: [SdComputeUnits] = []
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
 }
 
+///*
+/// Represents an image within the Stable Diffusion context.
+/// This could be an input image for an image generation request, or it could be
+/// a generated image from the Stable Diffusion model.
 public struct SdImage {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  public var content: Data = Data()
+  ///*
+  /// The format of the image.
+  public var format: SdImageFormat = .png
+
+  ///*
+  /// The raw data of the image, in the specified format.
+  public var data: Data = Data()
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
 }
 
+///*
+/// Represents a request to list the models available on the host.
 public struct SdListModelsRequest {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -146,54 +295,44 @@ public struct SdListModelsRequest {
   public init() {}
 }
 
+///*
+/// Represents a response to listing the models available on the host.
 public struct SdListModelsResponse {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  public var models: [SdModelInfo] = []
+  ///*
+  /// The available models on the Stable Diffusion server.
+  public var availableModels: [SdModelInfo] = []
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
 }
 
-public struct SdReloadModelsRequest {
-  // SwiftProtobuf.Message conformance is added in an extension below. See the
-  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
-  // methods supported on all messages.
-
-  public var unknownFields = SwiftProtobuf.UnknownStorage()
-
-  public init() {}
-}
-
-public struct SdReloadModelsResponse {
-  // SwiftProtobuf.Message conformance is added in an extension below. See the
-  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
-  // methods supported on all messages.
-
-  public var unknownFields = SwiftProtobuf.UnknownStorage()
-
-  public init() {}
-}
-
+///*
+/// Represents a request to load a model into a specified compute unit.
 public struct SdLoadModelRequest {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
+  ///*
+  /// The model name to load onto the compute unit.
   public var modelName: String = String()
 
+  ///*
+  /// The compute units to load the model onto.
   public var computeUnits: SdComputeUnits = .cpu
-
-  public var reduceMemory: Bool = false
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
 }
 
+///*
+/// Represents a response to loading a model.
 public struct SdLoadModelResponse {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -204,30 +343,62 @@ public struct SdLoadModelResponse {
   public init() {}
 }
 
+///*
+/// Represents a request to generate images using a loaded model.
 public struct SdGenerateImagesRequest {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
+  ///*
+  /// The model name to use for generation.
+  /// The model must be already be loaded using ModelService.LoadModel RPC method.
   public var modelName: String = String()
 
-  public var imageCount: UInt32 = 0
+  ///*
+  /// The output format for generated images.
+  public var outputImageFormat: SdImageFormat = .png
 
+  ///*
+  /// The number of batches of images to generate.
+  public var batchCount: UInt32 = 0
+
+  ///*
+  /// The number of images inside a single batch.
+  public var batchSize: UInt32 = 0
+
+  ///*
+  /// The positive textual prompt for image generation.
   public var prompt: String = String()
 
+  ///*
+  /// The negative prompt for image generation.
   public var negativePrompt: String = String()
+
+  ///*
+  /// The random seed to use.
+  /// Zero indicates that the seed should be random.
+  public var seed: UInt32 = 0
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
 }
 
+///*
+/// Represents the response from image generation.
 public struct SdGenerateImagesResponse {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
+  ///*
+  /// The set of generated images by the Stable Diffusion pipeline.
   public var images: [SdImage] = []
+
+  ///*
+  /// The seeds that were used to generate the images.
+  public var seeds: [UInt32] = []
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -235,14 +406,14 @@ public struct SdGenerateImagesResponse {
 }
 
 #if swift(>=5.5) && canImport(_Concurrency)
+extension SdModelAttention: @unchecked Sendable {}
 extension SdScheduler: @unchecked Sendable {}
 extension SdComputeUnits: @unchecked Sendable {}
+extension SdImageFormat: @unchecked Sendable {}
 extension SdModelInfo: @unchecked Sendable {}
 extension SdImage: @unchecked Sendable {}
 extension SdListModelsRequest: @unchecked Sendable {}
 extension SdListModelsResponse: @unchecked Sendable {}
-extension SdReloadModelsRequest: @unchecked Sendable {}
-extension SdReloadModelsResponse: @unchecked Sendable {}
 extension SdLoadModelRequest: @unchecked Sendable {}
 extension SdLoadModelResponse: @unchecked Sendable {}
 extension SdGenerateImagesRequest: @unchecked Sendable {}
@@ -253,10 +424,17 @@ extension SdGenerateImagesResponse: @unchecked Sendable {}
 
 fileprivate let _protobuf_package = "gay.pizza.stable.diffusion"
 
+extension SdModelAttention: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "original"),
+    1: .same(proto: "split_ein_sum"),
+  ]
+}
+
 extension SdScheduler: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "pndm"),
-    1: .same(proto: "dpmSolverPlusPlus"),
+    1: .same(proto: "dpm_solver_plus_plus"),
   ]
 }
 
@@ -269,12 +447,20 @@ extension SdComputeUnits: SwiftProtobuf._ProtoNameProviding {
   ]
 }
 
+extension SdImageFormat: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "png"),
+  ]
+}
+
 extension SdModelInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ModelInfo"
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "name"),
     2: .same(proto: "attention"),
     3: .standard(proto: "is_loaded"),
+    4: .standard(proto: "loaded_compute_units"),
+    5: .standard(proto: "supported_compute_units"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -284,8 +470,10 @@ extension SdModelInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularStringField(value: &self.name) }()
-      case 2: try { try decoder.decodeSingularStringField(value: &self.attention) }()
+      case 2: try { try decoder.decodeSingularEnumField(value: &self.attention) }()
       case 3: try { try decoder.decodeSingularBoolField(value: &self.isLoaded) }()
+      case 4: try { try decoder.decodeSingularEnumField(value: &self.loadedComputeUnits) }()
+      case 5: try { try decoder.decodeRepeatedEnumField(value: &self.supportedComputeUnits) }()
       default: break
       }
     }
@@ -295,11 +483,17 @@ extension SdModelInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     if !self.name.isEmpty {
       try visitor.visitSingularStringField(value: self.name, fieldNumber: 1)
     }
-    if !self.attention.isEmpty {
-      try visitor.visitSingularStringField(value: self.attention, fieldNumber: 2)
+    if self.attention != .original {
+      try visitor.visitSingularEnumField(value: self.attention, fieldNumber: 2)
     }
     if self.isLoaded != false {
       try visitor.visitSingularBoolField(value: self.isLoaded, fieldNumber: 3)
+    }
+    if self.loadedComputeUnits != .cpu {
+      try visitor.visitSingularEnumField(value: self.loadedComputeUnits, fieldNumber: 4)
+    }
+    if !self.supportedComputeUnits.isEmpty {
+      try visitor.visitPackedEnumField(value: self.supportedComputeUnits, fieldNumber: 5)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -308,6 +502,8 @@ extension SdModelInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     if lhs.name != rhs.name {return false}
     if lhs.attention != rhs.attention {return false}
     if lhs.isLoaded != rhs.isLoaded {return false}
+    if lhs.loadedComputeUnits != rhs.loadedComputeUnits {return false}
+    if lhs.supportedComputeUnits != rhs.supportedComputeUnits {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -316,7 +512,8 @@ extension SdModelInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
 extension SdImage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".Image"
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "content"),
+    1: .same(proto: "format"),
+    2: .same(proto: "data"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -325,21 +522,26 @@ extension SdImage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
       // allocates stack space for every case branch when no optimizations are
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
-      case 1: try { try decoder.decodeSingularBytesField(value: &self.content) }()
+      case 1: try { try decoder.decodeSingularEnumField(value: &self.format) }()
+      case 2: try { try decoder.decodeSingularBytesField(value: &self.data) }()
       default: break
       }
     }
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    if !self.content.isEmpty {
-      try visitor.visitSingularBytesField(value: self.content, fieldNumber: 1)
+    if self.format != .png {
+      try visitor.visitSingularEnumField(value: self.format, fieldNumber: 1)
+    }
+    if !self.data.isEmpty {
+      try visitor.visitSingularBytesField(value: self.data, fieldNumber: 2)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: SdImage, rhs: SdImage) -> Bool {
-    if lhs.content != rhs.content {return false}
+    if lhs.format != rhs.format {return false}
+    if lhs.data != rhs.data {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -367,7 +569,7 @@ extension SdListModelsRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
 extension SdListModelsResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ListModelsResponse"
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "models"),
+    1: .standard(proto: "available_models"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -376,59 +578,21 @@ extension SdListModelsResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
       // allocates stack space for every case branch when no optimizations are
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
-      case 1: try { try decoder.decodeRepeatedMessageField(value: &self.models) }()
+      case 1: try { try decoder.decodeRepeatedMessageField(value: &self.availableModels) }()
       default: break
       }
     }
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    if !self.models.isEmpty {
-      try visitor.visitRepeatedMessageField(value: self.models, fieldNumber: 1)
+    if !self.availableModels.isEmpty {
+      try visitor.visitRepeatedMessageField(value: self.availableModels, fieldNumber: 1)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: SdListModelsResponse, rhs: SdListModelsResponse) -> Bool {
-    if lhs.models != rhs.models {return false}
-    if lhs.unknownFields != rhs.unknownFields {return false}
-    return true
-  }
-}
-
-extension SdReloadModelsRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  public static let protoMessageName: String = _protobuf_package + ".ReloadModelsRequest"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
-
-  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    while let _ = try decoder.nextFieldNumber() {
-    }
-  }
-
-  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    try unknownFields.traverse(visitor: &visitor)
-  }
-
-  public static func ==(lhs: SdReloadModelsRequest, rhs: SdReloadModelsRequest) -> Bool {
-    if lhs.unknownFields != rhs.unknownFields {return false}
-    return true
-  }
-}
-
-extension SdReloadModelsResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  public static let protoMessageName: String = _protobuf_package + ".ReloadModelsResponse"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
-
-  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    while let _ = try decoder.nextFieldNumber() {
-    }
-  }
-
-  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    try unknownFields.traverse(visitor: &visitor)
-  }
-
-  public static func ==(lhs: SdReloadModelsResponse, rhs: SdReloadModelsResponse) -> Bool {
+    if lhs.availableModels != rhs.availableModels {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -439,7 +603,6 @@ extension SdLoadModelRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "model_name"),
     2: .standard(proto: "compute_units"),
-    3: .standard(proto: "reduce_memory"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -450,7 +613,6 @@ extension SdLoadModelRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularStringField(value: &self.modelName) }()
       case 2: try { try decoder.decodeSingularEnumField(value: &self.computeUnits) }()
-      case 3: try { try decoder.decodeSingularBoolField(value: &self.reduceMemory) }()
       default: break
       }
     }
@@ -463,16 +625,12 @@ extension SdLoadModelRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     if self.computeUnits != .cpu {
       try visitor.visitSingularEnumField(value: self.computeUnits, fieldNumber: 2)
     }
-    if self.reduceMemory != false {
-      try visitor.visitSingularBoolField(value: self.reduceMemory, fieldNumber: 3)
-    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: SdLoadModelRequest, rhs: SdLoadModelRequest) -> Bool {
     if lhs.modelName != rhs.modelName {return false}
     if lhs.computeUnits != rhs.computeUnits {return false}
-    if lhs.reduceMemory != rhs.reduceMemory {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -501,9 +659,12 @@ extension SdGenerateImagesRequest: SwiftProtobuf.Message, SwiftProtobuf._Message
   public static let protoMessageName: String = _protobuf_package + ".GenerateImagesRequest"
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "model_name"),
-    2: .standard(proto: "image_count"),
-    3: .same(proto: "prompt"),
-    4: .standard(proto: "negative_prompt"),
+    2: .standard(proto: "output_image_format"),
+    3: .standard(proto: "batch_count"),
+    4: .standard(proto: "batch_size"),
+    5: .same(proto: "prompt"),
+    6: .standard(proto: "negative_prompt"),
+    7: .same(proto: "seed"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -513,9 +674,12 @@ extension SdGenerateImagesRequest: SwiftProtobuf.Message, SwiftProtobuf._Message
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularStringField(value: &self.modelName) }()
-      case 2: try { try decoder.decodeSingularUInt32Field(value: &self.imageCount) }()
-      case 3: try { try decoder.decodeSingularStringField(value: &self.prompt) }()
-      case 4: try { try decoder.decodeSingularStringField(value: &self.negativePrompt) }()
+      case 2: try { try decoder.decodeSingularEnumField(value: &self.outputImageFormat) }()
+      case 3: try { try decoder.decodeSingularUInt32Field(value: &self.batchCount) }()
+      case 4: try { try decoder.decodeSingularUInt32Field(value: &self.batchSize) }()
+      case 5: try { try decoder.decodeSingularStringField(value: &self.prompt) }()
+      case 6: try { try decoder.decodeSingularStringField(value: &self.negativePrompt) }()
+      case 7: try { try decoder.decodeSingularUInt32Field(value: &self.seed) }()
       default: break
       }
     }
@@ -525,23 +689,35 @@ extension SdGenerateImagesRequest: SwiftProtobuf.Message, SwiftProtobuf._Message
     if !self.modelName.isEmpty {
       try visitor.visitSingularStringField(value: self.modelName, fieldNumber: 1)
     }
-    if self.imageCount != 0 {
-      try visitor.visitSingularUInt32Field(value: self.imageCount, fieldNumber: 2)
+    if self.outputImageFormat != .png {
+      try visitor.visitSingularEnumField(value: self.outputImageFormat, fieldNumber: 2)
+    }
+    if self.batchCount != 0 {
+      try visitor.visitSingularUInt32Field(value: self.batchCount, fieldNumber: 3)
+    }
+    if self.batchSize != 0 {
+      try visitor.visitSingularUInt32Field(value: self.batchSize, fieldNumber: 4)
     }
     if !self.prompt.isEmpty {
-      try visitor.visitSingularStringField(value: self.prompt, fieldNumber: 3)
+      try visitor.visitSingularStringField(value: self.prompt, fieldNumber: 5)
     }
     if !self.negativePrompt.isEmpty {
-      try visitor.visitSingularStringField(value: self.negativePrompt, fieldNumber: 4)
+      try visitor.visitSingularStringField(value: self.negativePrompt, fieldNumber: 6)
+    }
+    if self.seed != 0 {
+      try visitor.visitSingularUInt32Field(value: self.seed, fieldNumber: 7)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: SdGenerateImagesRequest, rhs: SdGenerateImagesRequest) -> Bool {
     if lhs.modelName != rhs.modelName {return false}
-    if lhs.imageCount != rhs.imageCount {return false}
+    if lhs.outputImageFormat != rhs.outputImageFormat {return false}
+    if lhs.batchCount != rhs.batchCount {return false}
+    if lhs.batchSize != rhs.batchSize {return false}
     if lhs.prompt != rhs.prompt {return false}
     if lhs.negativePrompt != rhs.negativePrompt {return false}
+    if lhs.seed != rhs.seed {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -551,6 +727,7 @@ extension SdGenerateImagesResponse: SwiftProtobuf.Message, SwiftProtobuf._Messag
   public static let protoMessageName: String = _protobuf_package + ".GenerateImagesResponse"
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "images"),
+    2: .same(proto: "seeds"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -560,6 +737,7 @@ extension SdGenerateImagesResponse: SwiftProtobuf.Message, SwiftProtobuf._Messag
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
       case 1: try { try decoder.decodeRepeatedMessageField(value: &self.images) }()
+      case 2: try { try decoder.decodeRepeatedUInt32Field(value: &self.seeds) }()
       default: break
       }
     }
@@ -569,11 +747,15 @@ extension SdGenerateImagesResponse: SwiftProtobuf.Message, SwiftProtobuf._Messag
     if !self.images.isEmpty {
       try visitor.visitRepeatedMessageField(value: self.images, fieldNumber: 1)
     }
+    if !self.seeds.isEmpty {
+      try visitor.visitPackedUInt32Field(value: self.seeds, fieldNumber: 2)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: SdGenerateImagesResponse, rhs: SdGenerateImagesResponse) -> Bool {
     if lhs.images != rhs.images {return false}
+    if lhs.seeds != rhs.seeds {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

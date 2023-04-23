@@ -13,7 +13,7 @@ public actor ModelManager {
         self.modelBaseURL = modelBaseURL
     }
 
-    public func reloadModels() throws {
+    public func reloadAvailableModels() throws {
         modelInfos.removeAll()
         modelUrls.removeAll()
         modelStates.removeAll()
@@ -26,8 +26,37 @@ public actor ModelManager {
         }
     }
 
-    public func listModels() -> [SdModelInfo] {
-        Array(modelInfos.values)
+    public func listAvailableModels() async throws -> [SdModelInfo] {
+        var results: [SdModelInfo] = []
+        for simpleInfo in modelInfos.values {
+            var info = try SdModelInfo(jsonString: simpleInfo.jsonString())
+            if let maybeLoaded = modelStates[info.name] {
+                info.isLoaded = await maybeLoaded.isModelLoaded()
+                if let loadedComputeUnits = await maybeLoaded.loadedModelComputeUnits() {
+                    info.loadedComputeUnits = loadedComputeUnits
+                }
+            } else {
+                info.isLoaded = false
+                info.loadedComputeUnits = .init()
+            }
+
+            if info.attention == .splitEinSum {
+                info.supportedComputeUnits = [
+                    .cpuAndGpu,
+                    .cpuAndNeuralEngine,
+                    .cpu,
+                    .all
+                ]
+            } else {
+                info.supportedComputeUnits = [
+                    .cpuAndGpu,
+                    .cpu
+                ]
+            }
+
+            results.append(info)
+        }
+        return results
     }
 
     public func createModelState(name: String) throws -> ModelState {
@@ -53,13 +82,14 @@ public actor ModelManager {
     private func addModel(url: URL) throws {
         var info = SdModelInfo()
         info.name = url.lastPathComponent
-        let attention = getModelAttention(url)
-        info.attention = attention ?? "unknown"
+        if let attention = getModelAttention(url) {
+            info.attention = attention
+        }
         modelInfos[info.name] = info
         modelUrls[info.name] = url
     }
 
-    private func getModelAttention(_ url: URL) -> String? {
+    private func getModelAttention(_ url: URL) -> SdModelAttention? {
         let unetMetadataURL = url.appending(components: "Unet.mlmodelc", "metadata.json")
 
         struct ModelMetadata: Decodable {
@@ -74,7 +104,7 @@ public actor ModelManager {
                 return nil
             }
 
-            return metadatas[0].mlProgramOperationTypeHistogram["Ios16.einsum"] != nil ? "split-einsum" : "original"
+            return metadatas[0].mlProgramOperationTypeHistogram["Ios16.einsum"] != nil ? SdModelAttention.splitEinSum : SdModelAttention.original
         } catch {
             return nil
         }

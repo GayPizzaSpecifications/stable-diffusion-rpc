@@ -7,14 +7,15 @@ public actor ModelState {
     private let url: URL
     private var pipeline: StableDiffusionPipeline?
     private var tokenizer: BPETokenizer?
+    private var loadedConfiguration: MLModelConfiguration?
 
     public init(url: URL) {
         self.url = url
     }
 
-    public func load() throws {
+    public func load(request: SdLoadModelRequest) throws {
         let config = MLModelConfiguration()
-        config.computeUnits = .cpuAndGPU
+        config.computeUnits = request.computeUnits.toMlComputeUnits()
         pipeline = try StableDiffusionPipeline(
             resourcesAt: url,
             controlNet: [],
@@ -26,6 +27,15 @@ public actor ModelState {
         let vocabUrl = url.appending(component: "vocab.json")
         tokenizer = try BPETokenizer(mergesAt: mergesUrl, vocabularyAt: vocabUrl)
         try pipeline?.loadResources()
+        loadedConfiguration = config
+    }
+
+    public func isModelLoaded() -> Bool {
+        pipeline != nil
+    }
+
+    public func loadedModelComputeUnits() -> SdComputeUnits? {
+        loadedConfiguration?.computeUnits.toSdComputeUnits()
     }
 
     public func generate(_ request: SdGenerateImagesRequest) throws -> SdGenerateImagesResponse {
@@ -33,20 +43,25 @@ public actor ModelState {
             throw SdCoreError.modelNotLoaded
         }
 
+        let baseSeed: UInt32 = request.seed
+
         var pipelineConfig = StableDiffusionPipeline.Configuration(prompt: request.prompt)
         pipelineConfig.negativePrompt = request.negativePrompt
-        pipelineConfig.seed = UInt32.random(in: 0 ..< UInt32.max)
-
+        pipelineConfig.imageCount = Int(request.batchSize)
         var response = SdGenerateImagesResponse()
-        for _ in 0 ..< request.imageCount {
+        for _ in 0 ..< request.batchCount {
+            var seed = baseSeed
+            if seed == 0 {
+                seed = UInt32.random(in: 0 ..< UInt32.max)
+            }
+            pipelineConfig.seed = seed
             let images = try pipeline.generateImages(configuration: pipelineConfig)
 
             for cgImage in images {
                 guard let cgImage else { continue }
-                var image = SdImage()
-                image.content = try cgImage.toPngData()
-                response.images.append(image)
+                try response.images.append(cgImage.toSdImage(format: request.outputImageFormat))
             }
+            response.seeds.append(seed)
         }
         return response
     }

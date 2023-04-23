@@ -10,7 +10,7 @@ class ImageGenerationServiceProvider: SdImageGenerationServiceAsyncProvider {
         self.modelManager = modelManager
     }
 
-    func generateImage(request: SdGenerateImagesRequest, context _: GRPCAsyncServerCallContext) async throws -> SdGenerateImagesResponse {
+    func generateImages(request: SdGenerateImagesRequest, context _: GRPCAsyncServerCallContext) async throws -> SdGenerateImagesResponse {
         guard let state = await modelManager.getModelState(name: request.modelName) else {
             throw SdCoreError.modelNotFound
         }

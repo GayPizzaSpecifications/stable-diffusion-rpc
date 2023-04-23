@@ -11,20 +11,15 @@ class ModelServiceProvider: SdModelServiceAsyncProvider {
     }
 
     func listModels(request _: SdListModelsRequest, context _: GRPCAsyncServerCallContext) async throws -> SdListModelsResponse {
-        let models = await modelManager.listModels()
+        let models = try await modelManager.listAvailableModels()
         var response = SdListModelsResponse()
-        response.models.append(contentsOf: models)
+        response.availableModels.append(contentsOf: models)
         return response
-    }
-
-    func reloadModels(request _: SdReloadModelsRequest, context _: GRPCAsyncServerCallContext) async throws -> SdReloadModelsResponse {
-        try await modelManager.reloadModels()
-        return SdReloadModelsResponse()
     }
 
     func loadModel(request: SdLoadModelRequest, context _: GRPCAsyncServerCallContext) async throws -> SdLoadModelResponse {
         let state = try await modelManager.createModelState(name: request.modelName)
-        try await state.load()
+        try await state.load(request: request)
         return SdLoadModelResponse()
     }
 }

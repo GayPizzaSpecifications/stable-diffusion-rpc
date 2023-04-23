@@ -1,3 +1,4 @@
+name: java
 on: [push]
 jobs:
   build:

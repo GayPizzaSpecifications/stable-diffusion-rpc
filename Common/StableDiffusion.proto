@@ -270,6 +270,29 @@ message GenerateImagesResponse {
     repeated uint32 seeds = 2;
 }
 
+message GenerateImagesBatchProgressUpdate {
+    float percentage_complete = 1;
+}
+
+message GenerateImagesBatchCompletedUpdate {
+    repeated Image images = 1;
+    uint32 seed = 2;
+}
+
+/**
+ * Represents a continuous update from an image generation stream.
+ */
+message GenerateImagesStreamUpdate {
+    uint32 current_batch = 1;
+
+    oneof update {
+        GenerateImagesBatchProgressUpdate batch_progress = 2;
+        GenerateImagesBatchCompletedUpdate batch_completed = 3;
+    }
+
+    float overall_percentage_complete = 4;
+}
+
 /**
  * The image generation service, for generating images from loaded models.
  */
@@ -278,4 +301,6 @@ service ImageGenerationService {
      * Generates images using a loaded model.
      */
     rpc GenerateImages(GenerateImagesRequest) returns (GenerateImagesResponse);
+
+    rpc GenerateImagesStreaming(GenerateImagesRequest) returns (stream GenerateImagesStreamUpdate);
 }

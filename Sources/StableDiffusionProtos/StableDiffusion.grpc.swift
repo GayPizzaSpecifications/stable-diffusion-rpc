@@ -295,6 +295,12 @@ public protocol SdImageGenerationServiceClientProtocol: GRPCClient {
     _ request: SdGenerateImagesRequest,
     callOptions: CallOptions?
   ) -> UnaryCall<SdGenerateImagesRequest, SdGenerateImagesResponse>
+
+  func generateImagesStreaming(
+    _ request: SdGenerateImagesRequest,
+    callOptions: CallOptions?,
+    handler: @escaping (SdGenerateImagesStreamUpdate) -> Void
+  ) -> ServerStreamingCall<SdGenerateImagesRequest, SdGenerateImagesStreamUpdate>
 }
 
 extension SdImageGenerationServiceClientProtocol {
@@ -318,6 +324,27 @@ extension SdImageGenerationServiceClientProtocol {
       request: request,
       callOptions: callOptions ?? self.defaultCallOptions,
       interceptors: self.interceptors?.makeGenerateImagesInterceptors() ?? []
+    )
+  }
+
+  /// Server streaming call to GenerateImagesStreaming
+  ///
+  /// - Parameters:
+  ///   - request: Request to send to GenerateImagesStreaming.
+  ///   - callOptions: Call options.
+  ///   - handler: A closure called when each response is received from the server.
+  /// - Returns: A `ServerStreamingCall` with futures for the metadata and status.
+  public func generateImagesStreaming(
+    _ request: SdGenerateImagesRequest,
+    callOptions: CallOptions? = nil,
+    handler: @escaping (SdGenerateImagesStreamUpdate) -> Void
+  ) -> ServerStreamingCall<SdGenerateImagesRequest, SdGenerateImagesStreamUpdate> {
+    return self.makeServerStreamingCall(
+      path: SdImageGenerationServiceClientMetadata.Methods.generateImagesStreaming.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeGenerateImagesStreamingInterceptors() ?? [],
+      handler: handler
     )
   }
 }
@@ -393,6 +420,11 @@ public protocol SdImageGenerationServiceAsyncClientProtocol: GRPCClient {
     _ request: SdGenerateImagesRequest,
     callOptions: CallOptions?
   ) -> GRPCAsyncUnaryCall<SdGenerateImagesRequest, SdGenerateImagesResponse>
+
+  func makeGenerateImagesStreamingCall(
+    _ request: SdGenerateImagesRequest,
+    callOptions: CallOptions?
+  ) -> GRPCAsyncServerStreamingCall<SdGenerateImagesRequest, SdGenerateImagesStreamUpdate>
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
@@ -416,6 +448,18 @@ extension SdImageGenerationServiceAsyncClientProtocol {
       interceptors: self.interceptors?.makeGenerateImagesInterceptors() ?? []
     )
   }
+
+  public func makeGenerateImagesStreamingCall(
+    _ request: SdGenerateImagesRequest,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncServerStreamingCall<SdGenerateImagesRequest, SdGenerateImagesStreamUpdate> {
+    return self.makeAsyncServerStreamingCall(
+      path: SdImageGenerationServiceClientMetadata.Methods.generateImagesStreaming.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeGenerateImagesStreamingInterceptors() ?? []
+    )
+  }
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
@@ -429,6 +473,18 @@ extension SdImageGenerationServiceAsyncClientProtocol {
       request: request,
       callOptions: callOptions ?? self.defaultCallOptions,
       interceptors: self.interceptors?.makeGenerateImagesInterceptors() ?? []
+    )
+  }
+
+  public func generateImagesStreaming(
+    _ request: SdGenerateImagesRequest,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncResponseStream<SdGenerateImagesStreamUpdate> {
+    return self.performAsyncServerStreamingCall(
+      path: SdImageGenerationServiceClientMetadata.Methods.generateImagesStreaming.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeGenerateImagesStreamingInterceptors() ?? []
     )
   }
 }
@@ -456,6 +512,9 @@ public protocol SdImageGenerationServiceClientInterceptorFactoryProtocol: GRPCSe
 
   /// - Returns: Interceptors to use when invoking 'generateImages'.
   func makeGenerateImagesInterceptors() -> [ClientInterceptor<SdGenerateImagesRequest, SdGenerateImagesResponse>]
+
+  /// - Returns: Interceptors to use when invoking 'generateImagesStreaming'.
+  func makeGenerateImagesStreamingInterceptors() -> [ClientInterceptor<SdGenerateImagesRequest, SdGenerateImagesStreamUpdate>]
 }
 
 public enum SdImageGenerationServiceClientMetadata {
@@ -464,6 +523,7 @@ public enum SdImageGenerationServiceClientMetadata {
     fullName: "gay.pizza.stable.diffusion.ImageGenerationService",
     methods: [
       SdImageGenerationServiceClientMetadata.Methods.generateImages,
+      SdImageGenerationServiceClientMetadata.Methods.generateImagesStreaming,
     ]
   )
 
@@ -472,6 +532,12 @@ public enum SdImageGenerationServiceClientMetadata {
       name: "GenerateImages",
       path: "/gay.pizza.stable.diffusion.ImageGenerationService/GenerateImages",
       type: GRPCCallType.unary
+    )
+
+    public static let generateImagesStreaming = GRPCMethodDescriptor(
+      name: "GenerateImagesStreaming",
+      path: "/gay.pizza.stable.diffusion.ImageGenerationService/GenerateImagesStreaming",
+      type: GRPCCallType.serverStreaming
     )
   }
 }
@@ -646,6 +712,8 @@ public protocol SdImageGenerationServiceProvider: CallHandlerProvider {
   ///*
   /// Generates images using a loaded model.
   func generateImages(request: SdGenerateImagesRequest, context: StatusOnlyCallContext) -> EventLoopFuture<SdGenerateImagesResponse>
+
+  func generateImagesStreaming(request: SdGenerateImagesRequest, context: StreamingResponseCallContext<SdGenerateImagesStreamUpdate>) -> EventLoopFuture<GRPCStatus>
 }
 
 extension SdImageGenerationServiceProvider {
@@ -667,6 +735,15 @@ extension SdImageGenerationServiceProvider {
         responseSerializer: ProtobufSerializer<SdGenerateImagesResponse>(),
         interceptors: self.interceptors?.makeGenerateImagesInterceptors() ?? [],
         userFunction: self.generateImages(request:context:)
+      )
+
+    case "GenerateImagesStreaming":
+      return ServerStreamingServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<SdGenerateImagesRequest>(),
+        responseSerializer: ProtobufSerializer<SdGenerateImagesStreamUpdate>(),
+        interceptors: self.interceptors?.makeGenerateImagesStreamingInterceptors() ?? [],
+        userFunction: self.generateImagesStreaming(request:context:)
       )
 
     default:
@@ -692,6 +769,12 @@ public protocol SdImageGenerationServiceAsyncProvider: CallHandlerProvider {
     request: SdGenerateImagesRequest,
     context: GRPCAsyncServerCallContext
   ) async throws -> SdGenerateImagesResponse
+
+  @Sendable func generateImagesStreaming(
+    request: SdGenerateImagesRequest,
+    responseStream: GRPCAsyncResponseStreamWriter<SdGenerateImagesStreamUpdate>,
+    context: GRPCAsyncServerCallContext
+  ) async throws
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
@@ -722,6 +805,15 @@ extension SdImageGenerationServiceAsyncProvider {
         wrapping: self.generateImages(request:context:)
       )
 
+    case "GenerateImagesStreaming":
+      return GRPCAsyncServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<SdGenerateImagesRequest>(),
+        responseSerializer: ProtobufSerializer<SdGenerateImagesStreamUpdate>(),
+        interceptors: self.interceptors?.makeGenerateImagesStreamingInterceptors() ?? [],
+        wrapping: self.generateImagesStreaming(request:responseStream:context:)
+      )
+
     default:
       return nil
     }
@@ -735,6 +827,10 @@ public protocol SdImageGenerationServiceServerInterceptorFactoryProtocol {
   /// - Returns: Interceptors to use when handling 'generateImages'.
   ///   Defaults to calling `self.makeInterceptors()`.
   func makeGenerateImagesInterceptors() -> [ServerInterceptor<SdGenerateImagesRequest, SdGenerateImagesResponse>]
+
+  /// - Returns: Interceptors to use when handling 'generateImagesStreaming'.
+  ///   Defaults to calling `self.makeInterceptors()`.
+  func makeGenerateImagesStreamingInterceptors() -> [ServerInterceptor<SdGenerateImagesRequest, SdGenerateImagesStreamUpdate>]
 }
 
 public enum SdImageGenerationServiceServerMetadata {
@@ -743,6 +839,7 @@ public enum SdImageGenerationServiceServerMetadata {
     fullName: "gay.pizza.stable.diffusion.ImageGenerationService",
     methods: [
       SdImageGenerationServiceServerMetadata.Methods.generateImages,
+      SdImageGenerationServiceServerMetadata.Methods.generateImagesStreaming,
     ]
   )
 
@@ -751,6 +848,12 @@ public enum SdImageGenerationServiceServerMetadata {
       name: "GenerateImages",
       path: "/gay.pizza.stable.diffusion.ImageGenerationService/GenerateImages",
       type: GRPCCallType.unary
+    )
+
+    public static let generateImagesStreaming = GRPCMethodDescriptor(
+      name: "GenerateImagesStreaming",
+      path: "/gay.pizza.stable.diffusion.ImageGenerationService/GenerateImagesStreaming",
+      type: GRPCCallType.serverStreaming
     )
   }
 }

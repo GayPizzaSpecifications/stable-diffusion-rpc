@@ -63,13 +63,20 @@ fun main() {
       startingImage = image
     }
   }.build()
-  val generateImagesResponse = client.imageGenerationServiceBlocking.generateImages(request)
+  for (update in client.imageGenerationServiceBlocking.generateImagesStreaming(request)) {
+    if (update.hasBatchProgress()) {
+      println("batch ${update.currentBatch} progress ${update.batchProgress.percentageComplete}%")
+    }
 
-  println("generated ${generateImagesResponse.imagesCount} images:")
-  for ((index, image) in generateImagesResponse.imagesList.withIndex()) {
-    println("  image ${index + 1} format=${image.format.name} data=(${image.data.size()} bytes)")
-    val path = Path("work/image${index}.${image.format.name}")
-    path.writeBytes(image.data.toByteArray())
+    if (update.hasBatchCompleted()) {
+      for ((index, image) in update.batchCompleted.imagesList.withIndex()) {
+        val imageIndex = ((update.currentBatch - 1) * request.batchSize) + (index + 1)
+        println("image $imageIndex format=${image.format.name} data=(${image.data.size()} bytes)")
+        val path = Path("work/image${imageIndex}.${image.format.name}")
+        path.writeBytes(image.data.toByteArray())
+      }
+    }
+    println("overall progress ${update.overallPercentageComplete}%")
   }
 
   channel.shutdownNow()

@@ -442,6 +442,90 @@ public struct SdGenerateImagesResponse {
   public init() {}
 }
 
+public struct SdGenerateImagesBatchProgressUpdate {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var percentageComplete: Float = 0
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+public struct SdGenerateImagesBatchCompletedUpdate {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var images: [SdImage] = []
+
+  public var seed: UInt32 = 0
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+///*
+/// Represents a continuous update from an image generation stream.
+public struct SdGenerateImagesStreamUpdate {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var currentBatch: UInt32 = 0
+
+  public var update: SdGenerateImagesStreamUpdate.OneOf_Update? = nil
+
+  public var batchProgress: SdGenerateImagesBatchProgressUpdate {
+    get {
+      if case .batchProgress(let v)? = update {return v}
+      return SdGenerateImagesBatchProgressUpdate()
+    }
+    set {update = .batchProgress(newValue)}
+  }
+
+  public var batchCompleted: SdGenerateImagesBatchCompletedUpdate {
+    get {
+      if case .batchCompleted(let v)? = update {return v}
+      return SdGenerateImagesBatchCompletedUpdate()
+    }
+    set {update = .batchCompleted(newValue)}
+  }
+
+  public var overallPercentageComplete: Float = 0
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public enum OneOf_Update: Equatable {
+    case batchProgress(SdGenerateImagesBatchProgressUpdate)
+    case batchCompleted(SdGenerateImagesBatchCompletedUpdate)
+
+  #if !swift(>=4.1)
+    public static func ==(lhs: SdGenerateImagesStreamUpdate.OneOf_Update, rhs: SdGenerateImagesStreamUpdate.OneOf_Update) -> Bool {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch (lhs, rhs) {
+      case (.batchProgress, .batchProgress): return {
+        guard case .batchProgress(let l) = lhs, case .batchProgress(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.batchCompleted, .batchCompleted): return {
+        guard case .batchCompleted(let l) = lhs, case .batchCompleted(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      default: return false
+      }
+    }
+  #endif
+  }
+
+  public init() {}
+}
+
 #if swift(>=5.5) && canImport(_Concurrency)
 extension SdModelAttention: @unchecked Sendable {}
 extension SdScheduler: @unchecked Sendable {}
@@ -455,6 +539,10 @@ extension SdLoadModelRequest: @unchecked Sendable {}
 extension SdLoadModelResponse: @unchecked Sendable {}
 extension SdGenerateImagesRequest: @unchecked Sendable {}
 extension SdGenerateImagesResponse: @unchecked Sendable {}
+extension SdGenerateImagesBatchProgressUpdate: @unchecked Sendable {}
+extension SdGenerateImagesBatchCompletedUpdate: @unchecked Sendable {}
+extension SdGenerateImagesStreamUpdate: @unchecked Sendable {}
+extension SdGenerateImagesStreamUpdate.OneOf_Update: @unchecked Sendable {}
 #endif  // swift(>=5.5) && canImport(_Concurrency)
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
@@ -833,6 +921,158 @@ extension SdGenerateImagesResponse: SwiftProtobuf.Message, SwiftProtobuf._Messag
   public static func ==(lhs: SdGenerateImagesResponse, rhs: SdGenerateImagesResponse) -> Bool {
     if lhs.images != rhs.images {return false}
     if lhs.seeds != rhs.seeds {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension SdGenerateImagesBatchProgressUpdate: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".GenerateImagesBatchProgressUpdate"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "percentage_complete"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularFloatField(value: &self.percentageComplete) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.percentageComplete != 0 {
+      try visitor.visitSingularFloatField(value: self.percentageComplete, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: SdGenerateImagesBatchProgressUpdate, rhs: SdGenerateImagesBatchProgressUpdate) -> Bool {
+    if lhs.percentageComplete != rhs.percentageComplete {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension SdGenerateImagesBatchCompletedUpdate: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".GenerateImagesBatchCompletedUpdate"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "images"),
+    2: .same(proto: "seed"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeRepeatedMessageField(value: &self.images) }()
+      case 2: try { try decoder.decodeSingularUInt32Field(value: &self.seed) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.images.isEmpty {
+      try visitor.visitRepeatedMessageField(value: self.images, fieldNumber: 1)
+    }
+    if self.seed != 0 {
+      try visitor.visitSingularUInt32Field(value: self.seed, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: SdGenerateImagesBatchCompletedUpdate, rhs: SdGenerateImagesBatchCompletedUpdate) -> Bool {
+    if lhs.images != rhs.images {return false}
+    if lhs.seed != rhs.seed {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension SdGenerateImagesStreamUpdate: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".GenerateImagesStreamUpdate"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "current_batch"),
+    2: .standard(proto: "batch_progress"),
+    3: .standard(proto: "batch_completed"),
+    4: .standard(proto: "overall_percentage_complete"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularUInt32Field(value: &self.currentBatch) }()
+      case 2: try {
+        var v: SdGenerateImagesBatchProgressUpdate?
+        var hadOneofValue = false
+        if let current = self.update {
+          hadOneofValue = true
+          if case .batchProgress(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.update = .batchProgress(v)
+        }
+      }()
+      case 3: try {
+        var v: SdGenerateImagesBatchCompletedUpdate?
+        var hadOneofValue = false
+        if let current = self.update {
+          hadOneofValue = true
+          if case .batchCompleted(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.update = .batchCompleted(v)
+        }
+      }()
+      case 4: try { try decoder.decodeSingularFloatField(value: &self.overallPercentageComplete) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    if self.currentBatch != 0 {
+      try visitor.visitSingularUInt32Field(value: self.currentBatch, fieldNumber: 1)
+    }
+    switch self.update {
+    case .batchProgress?: try {
+      guard case .batchProgress(let v)? = self.update else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+    }()
+    case .batchCompleted?: try {
+      guard case .batchCompleted(let v)? = self.update else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
+    }()
+    case nil: break
+    }
+    if self.overallPercentageComplete != 0 {
+      try visitor.visitSingularFloatField(value: self.overallPercentageComplete, fieldNumber: 4)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: SdGenerateImagesStreamUpdate, rhs: SdGenerateImagesStreamUpdate) -> Bool {
+    if lhs.currentBatch != rhs.currentBatch {return false}
+    if lhs.update != rhs.update {return false}
+    if lhs.overallPercentageComplete != rhs.overallPercentageComplete {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

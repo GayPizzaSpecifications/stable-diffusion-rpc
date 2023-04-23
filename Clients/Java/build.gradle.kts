@@ -22,6 +22,8 @@ java {
   val javaVersion = JavaVersion.toVersion(17)
   sourceCompatibility = javaVersion
   targetCompatibility = javaVersion
+
+  withSourcesJar()
 }
 
 sourceSets {
@@ -74,6 +76,12 @@ protobuf {
 }
 
 publishing {
+  publications {
+    create<MavenPublication>("mavenJava") {
+      from(components["java"])
+    }
+  }
+
   repositories {
     mavenLocal()
 

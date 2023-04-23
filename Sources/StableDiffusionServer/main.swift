@@ -9,6 +9,12 @@ struct ServerCommand: ParsableCommand {
     @Option(name: .shortAndLong, help: "Path to models directory")
     var modelsDirectoryPath: String = "models"
 
+    @Option(name: .long, help: "Bind host")
+    var bindHost: String = "0.0.0.0"
+
+    @Option(name: .long, help: "Bind port")
+    var bindPort: Int = 4546
+
     mutating func run() throws {
         let modelsDirectoryURL = URL(filePath: modelsDirectoryPath)
         let modelManager = ModelManager(modelBaseURL: modelsDirectoryURL)
@@ -30,7 +36,7 @@ struct ServerCommand: ParsableCommand {
                 ModelServiceProvider(modelManager: modelManager),
                 ImageGenerationServiceProvider(modelManager: modelManager)
             ])
-            .bind(host: "0.0.0.0", port: 4546)
+            .bind(host: bindHost, port: bindPort)
 
         dispatchMain()
     }

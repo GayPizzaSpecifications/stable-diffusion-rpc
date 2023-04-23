@@ -34,6 +34,7 @@ let package = Package(
         ]),
         .executableTarget(name: "TestStableDiffusionClient", dependencies: [
             .target(name: "StableDiffusionProtos"),
+            .target(name: "StableDiffusionCore"),
             .product(name: "GRPC", package: "grpc-swift")
         ])
     ]

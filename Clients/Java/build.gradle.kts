@@ -1,15 +1,17 @@
+import com.google.protobuf.gradle.id
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 group = "gay.pizza.stable.diffusion"
 version = "1.0.0-SNAPSHOT"
 
 plugins {
-  application
+  `java-library`
+  `maven-publish`
 
   kotlin("jvm") version "1.8.20"
   kotlin("plugin.serialization") version "1.8.20"
 
-  `maven-publish`
+  id("com.google.protobuf") version "0.9.2"
 }
 
 repositories {
@@ -22,9 +24,53 @@ java {
   targetCompatibility = javaVersion
 }
 
+sourceSets {
+  main {
+    proto {
+      srcDir("../../Common")
+      include("*.proto")
+    }
+  }
+}
+
 dependencies {
   implementation("org.jetbrains.kotlin:kotlin-bom")
   implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+
+  api("io.grpc:grpc-stub:1.54.1")
+  api("io.grpc:grpc-protobuf:1.54.1")
+  api("io.grpc:grpc-kotlin-stub:1.3.0")
+  implementation("io.grpc:grpc-netty:1.54.1")
+}
+
+protobuf {
+  protoc {
+    artifact = "com.google.protobuf:protoc:3.22.3"
+  }
+
+  plugins {
+    create("grpc") {
+      artifact = "io.grpc:protoc-gen-grpc-java:1.54.1"
+    }
+
+    create("grpckt") {
+      artifact = "io.grpc:protoc-gen-grpc-kotlin:1.3.0:jdk8@jar"
+    }
+  }
+
+  generateProtoTasks {
+    all().configureEach {
+      builtins {
+        java {}
+        kotlin {}
+      }
+
+      plugins {
+        id("grpc") {}
+        id("grpckt") {}
+      }
+    }
+  }
 }
 
 publishing {

@@ -562,6 +562,46 @@ public struct SdGenerateImagesStreamUpdate {
   public init() {}
 }
 
+///*
+/// Represents a request to tokenize an input.
+public struct SdTokenizeRequest {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  ///*
+  /// The name of a loaded model to use for tokenization.
+  public var modelName: String = String()
+
+  ///*
+  /// The input string to tokenize.
+  public var input: String = String()
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+///*
+/// Represents a response to tokenization.
+public struct SdTokenizeResponse {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  ///*
+  /// The tokens inside the input string.
+  public var tokens: [String] = []
+
+  ///*
+  /// The token IDs inside the input string.
+  public var tokenIds: [UInt64] = []
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
 #if swift(>=5.5) && canImport(_Concurrency)
 extension SdModelAttention: @unchecked Sendable {}
 extension SdScheduler: @unchecked Sendable {}
@@ -579,6 +619,8 @@ extension SdGenerateImagesBatchProgressUpdate: @unchecked Sendable {}
 extension SdGenerateImagesBatchCompletedUpdate: @unchecked Sendable {}
 extension SdGenerateImagesStreamUpdate: @unchecked Sendable {}
 extension SdGenerateImagesStreamUpdate.OneOf_Update: @unchecked Sendable {}
+extension SdTokenizeRequest: @unchecked Sendable {}
+extension SdTokenizeResponse: @unchecked Sendable {}
 #endif  // swift(>=5.5) && canImport(_Concurrency)
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
@@ -1121,6 +1163,82 @@ extension SdGenerateImagesStreamUpdate: SwiftProtobuf.Message, SwiftProtobuf._Me
     if lhs.currentBatch != rhs.currentBatch {return false}
     if lhs.update != rhs.update {return false}
     if lhs.overallPercentageComplete != rhs.overallPercentageComplete {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension SdTokenizeRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".TokenizeRequest"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "model_name"),
+    2: .same(proto: "input"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.modelName) }()
+      case 2: try { try decoder.decodeSingularStringField(value: &self.input) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.modelName.isEmpty {
+      try visitor.visitSingularStringField(value: self.modelName, fieldNumber: 1)
+    }
+    if !self.input.isEmpty {
+      try visitor.visitSingularStringField(value: self.input, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: SdTokenizeRequest, rhs: SdTokenizeRequest) -> Bool {
+    if lhs.modelName != rhs.modelName {return false}
+    if lhs.input != rhs.input {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension SdTokenizeResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".TokenizeResponse"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "tokens"),
+    2: .standard(proto: "token_ids"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeRepeatedStringField(value: &self.tokens) }()
+      case 2: try { try decoder.decodeRepeatedUInt64Field(value: &self.tokenIds) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.tokens.isEmpty {
+      try visitor.visitRepeatedStringField(value: self.tokens, fieldNumber: 1)
+    }
+    if !self.tokenIds.isEmpty {
+      try visitor.visitPackedUInt64Field(value: self.tokenIds, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: SdTokenizeResponse, rhs: SdTokenizeResponse) -> Bool {
+    if lhs.tokens != rhs.tokens {return false}
+    if lhs.tokenIds != rhs.tokenIds {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

@@ -2,7 +2,7 @@ package gay.pizza.stable.diffusion
 
 import io.grpc.Channel
 
-@Suppress("MemberVisibilityCanBePrivate")
+@Suppress("MemberVisibilityCanBePrivate", "unused")
 class StableDiffusionRpcClient(val channel: Channel) {
   val modelService: ModelServiceGrpc.ModelServiceStub by lazy {
     ModelServiceGrpc.newStub(channel)
@@ -34,5 +34,21 @@ class StableDiffusionRpcClient(val channel: Channel) {
 
   val imageGenerationServiceCoroutine: ImageGenerationServiceGrpcKt.ImageGenerationServiceCoroutineStub by lazy {
     ImageGenerationServiceGrpcKt.ImageGenerationServiceCoroutineStub(channel)
+  }
+
+  val tokenizerService: TokenizerServiceGrpc.TokenizerServiceStub by lazy {
+    TokenizerServiceGrpc.newStub(channel)
+  }
+
+  val tokenizerServiceBlocking: TokenizerServiceGrpc.TokenizerServiceBlockingStub by lazy {
+    TokenizerServiceGrpc.newBlockingStub(channel)
+  }
+
+  val tokenizerServiceFuture: TokenizerServiceGrpc.TokenizerServiceFutureStub by lazy {
+    TokenizerServiceGrpc.newFutureStub(channel)
+  }
+
+  val tokenizerServiceCoroutine: TokenizerServiceGrpcKt.TokenizerServiceCoroutineStub by lazy {
+    TokenizerServiceGrpcKt.TokenizerServiceCoroutineStub(channel)
   }
 }

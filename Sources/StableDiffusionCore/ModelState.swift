@@ -154,4 +154,15 @@ public actor ModelState {
         }
         return pipelineConfig
     }
+
+    public func tokenize(_ request: SdTokenizeRequest) throws -> SdTokenizeResponse {
+        guard let tokenizer else {
+            throw SdCoreError.modelNotLoaded
+        }
+        let results = tokenizer.tokenize(input: request.input)
+        var response = SdTokenizeResponse()
+        response.tokens = results.tokens
+        response.tokenIds = results.tokenIDs.map { UInt64($0) }
+        return response
+    }
 }

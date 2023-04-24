@@ -34,7 +34,8 @@ struct ServerCommand: ParsableCommand {
         _ = Server.insecure(group: group)
             .withServiceProviders([
                 ModelServiceProvider(modelManager: modelManager),
-                ImageGenerationServiceProvider(modelManager: modelManager)
+                ImageGenerationServiceProvider(modelManager: modelManager),
+                TokenizerServiceProvider(modelManager: modelManager)
             ])
             .bind(host: bindHost, port: bindPort)
 

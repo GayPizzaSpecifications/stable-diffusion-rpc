@@ -333,6 +333,9 @@ message GenerateImagesStreamUpdate {
         GenerateImagesBatchCompletedUpdate batch_completed = 3;
     }
 
+    /**
+     * The percentage of completion for the entire submitted job.
+     */
     float overall_percentage_complete = 4;
 }
 

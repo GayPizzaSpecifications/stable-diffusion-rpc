@@ -39,6 +39,8 @@ struct ServerCommand: ParsableCommand {
             ])
             .bind(host: bindHost, port: bindPort)
 
+        print("Stable Diffusion RPC running on \(bindHost):\(bindPort)")
+
         dispatchMain()
     }
 }

@@ -6,7 +6,7 @@ find_package(gRPC CONFIG REQUIRED)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
-add_library(sdrpc src/StableDiffusion.proto)
+add_library(sdrpc StableDiffusion.proto)
 
 get_target_property(grpc_cpp_plugin_location gRPC::grpc_cpp_plugin LOCATION)
 
@@ -17,6 +17,6 @@ protobuf_generate(TARGET sdrpc LANGUAGE grpc
 target_include_directories(sdrpc PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(sdrpc PUBLIC protobuf::libprotobuf gRPC::grpc gRPC::grpc++)
 
-add_executable(sdrpc_sample src/sample.cpp)
+add_executable(sdrpc_sample sample.cpp)
 target_include_directories(sdrpc_sample PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(sdrpc_sample PRIVATE sdrpc)

@@ -4,9 +4,11 @@ import StableDiffusionCore
 import StableDiffusionProtos
 
 class ImageGenerationServiceProvider: SdImageGenerationServiceAsyncProvider {
+    private let jobManager: JobManager
     private let modelManager: ModelManager
 
-    init(modelManager: ModelManager) {
+    init(jobManager: JobManager, modelManager: ModelManager) {
+        self.jobManager = jobManager
         self.modelManager = modelManager
     }
 
@@ -14,13 +16,25 @@ class ImageGenerationServiceProvider: SdImageGenerationServiceAsyncProvider {
         guard let state = await modelManager.getModelState(name: request.modelName) else {
             throw SdCoreError.modelNotFound
         }
-        return try await state.generate(request)
+        let job = await jobManager.create()
+        DispatchQueue.main.async {
+            Task {
+                await self.jobManager.updateJobQueued(job)
+            }
+        }
+        return try await state.generate(request, job: job)
     }
 
     func generateImagesStreaming(request: SdGenerateImagesRequest, responseStream: GRPCAsyncResponseStreamWriter<SdGenerateImagesStreamUpdate>, context _: GRPCAsyncServerCallContext) async throws {
         guard let state = await modelManager.getModelState(name: request.modelName) else {
             throw SdCoreError.modelNotFound
         }
-        try await state.generateStreaming(request, stream: responseStream)
+        let job = await jobManager.create()
+        DispatchQueue.main.async {
+            Task {
+                await self.jobManager.updateJobQueued(job)
+            }
+        }
+        _ = try await state.generate(request, job: job, stream: responseStream)
     }
 }

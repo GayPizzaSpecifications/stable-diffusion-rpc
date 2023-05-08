@@ -8,9 +8,11 @@ public actor ModelManager {
     private var modelStates: [String: ModelState] = [:]
 
     private let modelBaseURL: URL
+    private let jobManager: JobManager
 
-    public init(modelBaseURL: URL) {
+    public init(modelBaseURL: URL, jobManager: JobManager) {
         self.modelBaseURL = modelBaseURL
+        self.jobManager = jobManager
     }
 
     public func reloadAvailableModels() throws {
@@ -67,7 +69,7 @@ public actor ModelManager {
         }
 
         if state == nil {
-            let state = ModelState(url: url)
+            let state = ModelState(url: url, jobManager: jobManager)
             modelStates[name] = state
             return state
         } else {

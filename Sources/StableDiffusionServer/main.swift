@@ -16,8 +16,9 @@ struct ServerCommand: ParsableCommand {
     var bindPort: Int = 4546
 
     mutating func run() throws {
+        let jobManager = JobManager()
         let modelsDirectoryURL = URL(filePath: modelsDirectoryPath)
-        let modelManager = ModelManager(modelBaseURL: modelsDirectoryURL)
+        let modelManager = ModelManager(modelBaseURL: modelsDirectoryURL, jobManager: jobManager)
 
         let semaphore = DispatchSemaphore(value: 0)
         Task {
@@ -34,8 +35,9 @@ struct ServerCommand: ParsableCommand {
         _ = Server.insecure(group: group)
             .withServiceProviders([
                 ModelServiceProvider(modelManager: modelManager),
-                ImageGenerationServiceProvider(modelManager: modelManager),
-                TokenizerServiceProvider(modelManager: modelManager)
+                ImageGenerationServiceProvider(jobManager: jobManager, modelManager: modelManager),
+                TokenizerServiceProvider(modelManager: modelManager),
+                JobServiceProvider(jobManager: jobManager)
             ])
             .bind(host: bindHost, port: bindPort)
 

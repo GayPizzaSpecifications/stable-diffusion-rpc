@@ -5,4 +5,6 @@ public enum SdCoreError: Error {
     case imageEncodeFailed
     case imageDecodeFailed
     case modelNotFound
+    case jobNotFound
+    case notImplemented
 }

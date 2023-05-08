@@ -1,0 +1,131 @@
+/**
+ * Job management for the Stable Diffusion RPC service.
+ */
+syntax = "proto3";
+package gay.pizza.stable.diffusion;
+
+/**
+ * Utilize a prefix of 'Sd' for Swift.
+ */
+option swift_prefix = "Sd";
+option java_multiple_files = true;
+
+/**
+ * Represents the current state of a job.
+ */
+enum JobState {
+  /**
+   * The job is in an unknown state.
+   */
+  unknown = 0;
+
+  /**
+   * The job is queued. It has not started the work.
+   */
+  queued = 1;
+
+  /**
+   * The job is running. The work has been started.
+   */
+  running = 2;
+
+  /**
+   * The job is completed. The work has been completed.
+   */
+  completed = 3;
+
+  /**
+   * The job is cancelled. An actor requested cancellation.
+   */
+  cancelled = 4;
+}
+
+/**
+ * Represents a job that is active
+ */
+message Job {
+  /**
+   * Unique job identifier.
+   */
+  uint64 id = 1;
+
+  /**
+   * Job host identifier.
+   */
+  uint64 host = 2;
+
+  /**
+   * The current state of the job.
+   */
+  JobState state = 3;
+
+  /**
+   * The percentage of completion for the entire job.
+   */
+  float overall_percentage_complete = 4;
+}
+
+/**
+ * Represents a request to get the state of a job.
+ */
+message GetJobRequest {
+  /**
+   * The job id to retrieve the current state for.
+   */
+  uint64 id = 1;
+}
+
+/**
+ * Represents a response to getting the state of a job.
+ */
+message GetJobResponse {
+  /**
+   * The current state of the job.
+   */
+  Job job = 1;
+}
+
+/**
+ * Represents a request to cancel a job.
+ */
+message CancelJobRequest {
+  /**
+   * The job id to cancel.
+   */
+  uint64 id = 1;
+}
+
+/**
+ * Represents a response to cancel a job.
+ */
+message CancelJobResponse {}
+
+/**
+ * Represents a request to stream job updates.
+ */
+message StreamJobUpdatesRequest {
+  /**
+   * The job id to stream updates for. If this is not set or is zero,
+   * all job updates will be sent.
+   */
+  uint64 id = 1;
+}
+
+/**
+ * Represents an update to a job.
+ */
+message JobUpdate {
+  /**
+   * The current state of the job.
+   */
+  Job job = 1;
+}
+
+/**
+ * The job service, for inspecting and monitoring the state of jobs executing on the service.
+ */
+service JobService {
+  rpc GetJob(GetJobRequest) returns (GetJobResponse);
+  rpc CancelJob(CancelJobRequest) returns (CancelJobResponse);
+  rpc StreamJobUpdates(StreamJobUpdatesRequest) returns (stream JobUpdate);
+}

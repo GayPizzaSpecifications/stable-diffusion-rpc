@@ -1,9 +1,9 @@
 package gay.pizza.stable.diffusion.sample
 
 import com.google.protobuf.ByteString
-import gay.pizza.stable.diffusion.StableDiffusion.*
-import gay.pizza.stable.diffusion.StableDiffusionRpcClient
+import gay.pizza.stable.diffusion.*
 import io.grpc.ManagedChannelBuilder
+import io.grpc.stub.StreamObserver
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
@@ -23,6 +23,25 @@ fun main(args: Array<String>) {
     .build()
 
   val client = StableDiffusionRpcClient(channel)
+
+  val jobs = mutableMapOf<Long, Job>()
+
+  client.jobService.streamJobUpdates(StreamJobUpdatesRequest.getDefaultInstance(), object : StreamObserver<JobUpdate> {
+    override fun onNext(value: JobUpdate) {
+      jobs[value.job.id] = value.job
+      jobs.values.map {
+        "job=${it.id} status=${it.state.name} completion=${it.overallPercentageComplete}"
+      }.forEach(::println)
+    }
+
+    override fun onError(throwable: Throwable) {
+      throwable.printStackTrace()
+      exitProcess(1)
+    }
+
+    override fun onCompleted() {}
+  })
+
   val modelListResponse = client.modelServiceBlocking.listModels(ListModelsRequest.getDefaultInstance())
   if (modelListResponse.availableModelsList.isEmpty()) {
     println("no available models")

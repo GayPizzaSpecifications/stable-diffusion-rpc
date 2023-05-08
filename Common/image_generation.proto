@@ -1,0 +1,192 @@
+/**
+ * Image generation for the Stable Diffusion RPC service.
+ */
+syntax = "proto3";
+package gay.pizza.stable.diffusion;
+import "shared.proto";
+
+/**
+ * Utilize a prefix of 'Sd' for Swift.
+ */
+option swift_prefix = "Sd";
+option java_multiple_files = true;
+
+/**
+ * Represents a request to generate images using a loaded model.
+ */
+message GenerateImagesRequest {
+  /**
+   * The model name to use for generation.
+   * The model must be already be loaded using ModelService.LoadModel RPC method.
+   */
+  string model_name = 1;
+
+  /**
+   * The output format for generated images.
+   */
+  ImageFormat output_image_format = 2;
+
+  /**
+   * The number of batches of images to generate.
+   */
+  uint32 batch_count = 3;
+
+  /**
+   * The number of images inside a single batch.
+   */
+  uint32 batch_size = 4;
+
+  /**
+   * The positive textual prompt for image generation.
+   */
+  string prompt = 5;
+
+  /**
+   * The negative prompt for image generation.
+   */
+  string negative_prompt = 6;
+
+  /**
+   * The random seed to use.
+   * Zero indicates that the seed should be random.
+   */
+  uint32 seed = 7;
+
+  /**
+   * An optional starting image to use for generation.
+   */
+  Image starting_image = 8;
+
+  /**
+   * Indicates whether to enable the safety check network, if it is available.
+   */
+  bool enable_safety_check = 9;
+
+  /**
+   * The scheduler to use for generation.
+   * The default is PNDM, if not specified.
+   */
+  Scheduler scheduler = 10;
+
+  /**
+   * The guidance scale, which controls the influence the prompt has on the image.
+   * If not specified, a reasonable default value is used.
+   */
+  float guidance_scale = 11;
+
+  /**
+   * The strength of the image generation.
+   * If not specified, a reasonable default value is used.
+   */
+  float strength = 12;
+
+  /**
+   * The number of inference steps to perform.
+   * If not specified, a reasonable default value is used.
+   */
+  uint32 step_count = 13;
+
+  /**
+   * Indicates whether to send intermediate images
+   * while in streaming mode.
+   */
+  bool send_intermediates = 14;
+}
+
+/**
+ * Represents the response from image generation.
+ */
+message GenerateImagesResponse {
+  /**
+   * The set of generated images by the Stable Diffusion pipeline.
+   */
+  repeated Image images = 1;
+
+  /**
+   * The seeds that were used to generate the images.
+   */
+  repeated uint32 seeds = 2;
+}
+
+/**
+ * Represents a progress update for an image generation batch.
+ */
+message GenerateImagesBatchProgressUpdate {
+  /**
+   * The percentage of this batch that is complete.
+   */
+  float percentage_complete = 1;
+
+  /**
+   * The current state of the generated images from this batch.
+   * These are not usually completed images, but partial images.
+   * These are only available if the request's send_intermediates
+   * parameter is set to true.
+   */
+  repeated Image images = 2;
+}
+
+/**
+ * Represents a completion of an image generation batch.
+ */
+message GenerateImagesBatchCompletedUpdate {
+  /**
+   * The generated images from this batch.
+   */
+  repeated Image images = 1;
+
+  /**
+   * The seed for this batch.
+   */
+  uint32 seed = 2;
+}
+
+/**
+ * Represents a continuous update from an image generation stream.
+ */
+message GenerateImagesStreamUpdate {
+  /**
+   * The current batch number that is processing.
+   */
+  uint32 current_batch = 1;
+
+  /**
+   * An update to the image generation pipeline.
+   */
+  oneof update {
+    /**
+     * Batch progress update.
+     */
+    GenerateImagesBatchProgressUpdate batch_progress = 2;
+
+    /**
+     * Batch completion update.
+     */
+    GenerateImagesBatchCompletedUpdate batch_completed = 3;
+  }
+
+  /**
+   * The percentage of completion for the entire submitted job.
+   */
+  float overall_percentage_complete = 4;
+
+  /**
+   * The id of the spawned job.
+   */
+  uint64 job_id = 5;
+}
+
+/**
+ * The image generation service, for generating images from loaded models.
+ */
+service ImageGenerationService {
+  /**
+   * Generates images using a loaded model.
+   */
+  rpc GenerateImages(GenerateImagesRequest) returns (GenerateImagesResponse);
+
+  /**
+   * Generates images using a loaded model, providing updates along the way.
+   */
+  rpc GenerateImagesStreaming(GenerateImagesRequest) returns (stream GenerateImagesStreamUpdate);
+}

@@ -51,4 +51,20 @@ class StableDiffusionRpcClient(val channel: Channel) {
   val tokenizerServiceCoroutine: TokenizerServiceGrpcKt.TokenizerServiceCoroutineStub by lazy {
     TokenizerServiceGrpcKt.TokenizerServiceCoroutineStub(channel)
   }
+
+  val jobService: JobServiceGrpc.JobServiceStub by lazy {
+    JobServiceGrpc.newStub(channel)
+  }
+
+  val jobServiceBlocking: JobServiceGrpc.JobServiceBlockingStub by lazy {
+    JobServiceGrpc.newBlockingStub(channel)
+  }
+
+  val jobServiceFuture: JobServiceGrpc.JobServiceFutureStub by lazy {
+    JobServiceGrpc.newFutureStub(channel)
+  }
+
+  val jobServiceCoroutine: JobServiceGrpcKt.JobServiceCoroutineStub by lazy {
+    JobServiceGrpcKt.JobServiceCoroutineStub(channel)
+  }
 }

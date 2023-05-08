@@ -1,0 +1,51 @@
+/**
+ * Tokenization for the Stable Diffusion RPC service.
+ */
+syntax = "proto3";
+package gay.pizza.stable.diffusion;
+
+/**
+ * Utilize a prefix of 'Sd' for Swift.
+ */
+option swift_prefix = "Sd";
+option java_multiple_files = true;
+
+/**
+ * Represents a request to tokenize an input.
+ */
+message TokenizeRequest {
+  /**
+   * The name of a loaded model to use for tokenization.
+   */
+  string model_name = 1;
+
+  /**
+   * The input string to tokenize.
+   */
+  string input = 2;
+}
+
+/**
+ * Represents a response to tokenization.
+ */
+message TokenizeResponse {
+  /**
+   * The tokens inside the input string.
+   */
+  repeated string tokens = 1;
+
+  /**
+   * The token IDs inside the input string.
+   */
+  repeated uint64 token_ids = 2;
+}
+
+/**
+ * The tokenizer service, for analyzing tokens for a loaded model.
+ */
+service TokenizerService {
+  /**
+   * Analyze the input using a loaded model and return the results.
+   */
+  rpc Tokenize(TokenizeRequest) returns (TokenizeResponse);
+}

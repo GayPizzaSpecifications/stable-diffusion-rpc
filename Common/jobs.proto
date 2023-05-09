@@ -17,7 +17,7 @@ enum JobState {
   /**
    * The job is in an unknown state.
    */
-  unknown = 0;
+  unknown_state = 0;
 
   /**
    * The job is queued. It has not started the work.

@@ -1,0 +1,30 @@
+/**
+ * Server metadata for the Stable Diffusion RPC service.
+ */
+syntax = "proto3";
+package gay.pizza.stable.diffusion;
+
+/**
+ * Utilize a prefix of 'Sd' for Swift.
+ */
+option swift_prefix = "Sd";
+option java_multiple_files = true;
+
+enum ServerRole {
+  unknown_role = 0;
+  node = 1;
+  coordinator = 2;
+}
+
+message ServerMetadata {
+  ServerRole role = 1;
+}
+
+message GetServerMetadataRequest {}
+message GetServerMetadataResponse {
+  ServerMetadata metadata = 1;
+}
+
+service ServerMetadataService {
+  rpc GetServerMetadata(GetServerMetadataRequest) returns (GetServerMetadataResponse);
+}

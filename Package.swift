@@ -5,7 +5,7 @@ let package = Package(
     name: "stable-diffusion-rpc",
     platforms: [.macOS("13.1"), .iOS("16.2")],
     products: [
-        .executable(name: "stable-diffusion-rpc", targets: ["StableDiffusionServer"]),
+        .executable(name: "stable-diffusion-rpc", targets: ["StableDiffusionNode"]),
         .library(name: "StableDiffusionProtos", targets: ["StableDiffusionProtos"]),
         .executable(name: "stable-diffusion-ctl", targets: ["StableDiffusionControl"])
     ],
@@ -24,7 +24,7 @@ let package = Package(
             .product(name: "StableDiffusion", package: "ml-stable-diffusion"),
             .target(name: "StableDiffusionProtos")
         ]),
-        .executableTarget(name: "StableDiffusionServer", dependencies: [
+        .executableTarget(name: "StableDiffusionNode", dependencies: [
             .product(name: "StableDiffusion", package: "ml-stable-diffusion"),
             .product(name: "SwiftProtobuf", package: "swift-protobuf"),
             .product(name: "GRPC", package: "grpc-swift"),

@@ -20,6 +20,22 @@ class StableDiffusionRpcClient(val channel: Channel) {
     ModelServiceGrpcKt.ModelServiceCoroutineStub(channel)
   }
 
+  val hostModelService: HostModelServiceGrpc.HostModelServiceStub by lazy {
+    HostModelServiceGrpc.newStub(channel)
+  }
+
+  val hostModelServiceBlocking: HostModelServiceGrpc.HostModelServiceBlockingStub by lazy {
+    HostModelServiceGrpc.newBlockingStub(channel)
+  }
+
+  val hostModelServiceFuture: HostModelServiceGrpc.HostModelServiceFutureStub by lazy {
+    HostModelServiceGrpc.newFutureStub(channel)
+  }
+
+  val hostModelServiceCoroutine: HostModelServiceGrpcKt.HostModelServiceCoroutineStub by lazy {
+    HostModelServiceGrpcKt.HostModelServiceCoroutineStub(channel)
+  }
+
   val imageGenerationService: ImageGenerationServiceGrpc.ImageGenerationServiceStub by lazy {
     ImageGenerationServiceGrpc.newStub(channel)
   }

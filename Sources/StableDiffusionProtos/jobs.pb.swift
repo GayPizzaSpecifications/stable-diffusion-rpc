@@ -8,7 +8,7 @@
 //   https://github.com/apple/swift-protobuf/
 
 ///*
-/// Stable Diffusion RPC service for Apple Platforms.
+/// Job management for the Stable Diffusion RPC service.
 
 import Foundation
 import SwiftProtobuf
@@ -30,7 +30,7 @@ public enum SdJobState: SwiftProtobuf.Enum {
 
   ///*
   /// The job is in an unknown state.
-  case unknown // = 0
+  case unknownState // = 0
 
   ///*
   /// The job is queued. It has not started the work.
@@ -50,12 +50,12 @@ public enum SdJobState: SwiftProtobuf.Enum {
   case UNRECOGNIZED(Int)
 
   public init() {
-    self = .unknown
+    self = .unknownState
   }
 
   public init?(rawValue: Int) {
     switch rawValue {
-    case 0: self = .unknown
+    case 0: self = .unknownState
     case 1: self = .queued
     case 2: self = .running
     case 3: self = .completed
@@ -66,7 +66,7 @@ public enum SdJobState: SwiftProtobuf.Enum {
 
   public var rawValue: Int {
     switch self {
-    case .unknown: return 0
+    case .unknownState: return 0
     case .queued: return 1
     case .running: return 2
     case .completed: return 3
@@ -82,7 +82,7 @@ public enum SdJobState: SwiftProtobuf.Enum {
 extension SdJobState: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
   public static var allCases: [SdJobState] = [
-    .unknown,
+    .unknownState,
     .queued,
     .running,
     .completed,
@@ -109,7 +109,7 @@ public struct SdJob {
 
   ///*
   /// The current state of the job.
-  public var state: SdJobState = .unknown
+  public var state: SdJobState = .unknownState
 
   ///*
   /// The percentage of completion for the entire job.
@@ -248,7 +248,7 @@ fileprivate let _protobuf_package = "gay.pizza.stable.diffusion"
 
 extension SdJobState: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "unknown"),
+    0: .same(proto: "unknown_state"),
     1: .same(proto: "queued"),
     2: .same(proto: "running"),
     3: .same(proto: "completed"),
@@ -287,7 +287,7 @@ extension SdJob: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase
     if self.host != 0 {
       try visitor.visitSingularUInt64Field(value: self.host, fieldNumber: 2)
     }
-    if self.state != .unknown {
+    if self.state != .unknownState {
       try visitor.visitSingularEnumField(value: self.state, fieldNumber: 3)
     }
     if self.overallPercentageComplete != 0 {

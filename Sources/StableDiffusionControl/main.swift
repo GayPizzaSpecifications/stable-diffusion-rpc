@@ -11,7 +11,7 @@ Task { @MainActor in
         let modelListResponse = try await client.modelService.listModels(.init())
         print("Loading random model...")
         let modelInfo = modelListResponse.availableModels.randomElement()!
-        _ = try await client.modelService.loadModel(.with { request in
+        _ = try await client.hostModelService.loadModel(.with { request in
             request.modelName = modelInfo.name
         })
         print("Loaded random model.")

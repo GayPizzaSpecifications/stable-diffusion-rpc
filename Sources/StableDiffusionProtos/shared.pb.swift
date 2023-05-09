@@ -225,6 +225,26 @@ extension SdImageFormat: CaseIterable {
 #endif  // swift(>=4.2)
 
 ///*
+/// Represents a 128-bit UUID value.
+public struct SdUniqueIdentifier {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  ///*
+  /// The upper bits of the UUID.
+  public var upperBits: UInt64 = 0
+
+  ///*
+  /// The lower bits of the UUID.
+  public var lowerBits: UInt64 = 0
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+///*
 /// Represents information about an available model.
 /// The primary key of a model is it's 'name' field.
 public struct SdModelInfo {
@@ -233,24 +253,13 @@ public struct SdModelInfo {
   // methods supported on all messages.
 
   ///*
-  /// The name of the available model. Note that within the context of a single RPC server,
-  /// the name of a model is a unique identifier. This may not be true when utilizing a cluster or
-  /// load balanced server, so keep that in mind.
+  /// The name of the available model. Note that a model name is considered a unique identifier.
   public var name: String = String()
 
   ///*
   /// The attention of the model. Model attention determines what compute units can be used to
   /// load the model and make predictions.
   public var attention: SdModelAttention = .original
-
-  ///*
-  /// Whether the model is currently loaded onto an available compute unit.
-  public var isLoaded: Bool = false
-
-  ///*
-  /// The compute unit that the model is currently loaded into, if it is loaded to one at all.
-  /// When is_loaded is false, the value of this field should be null.
-  public var loadedComputeUnits: SdComputeUnits = .cpu
 
   ///*
   /// The compute units that this model supports using.
@@ -288,6 +297,7 @@ extension SdModelAttention: @unchecked Sendable {}
 extension SdScheduler: @unchecked Sendable {}
 extension SdComputeUnits: @unchecked Sendable {}
 extension SdImageFormat: @unchecked Sendable {}
+extension SdUniqueIdentifier: @unchecked Sendable {}
 extension SdModelInfo: @unchecked Sendable {}
 extension SdImage: @unchecked Sendable {}
 #endif  // swift(>=5.5) && canImport(_Concurrency)
@@ -325,13 +335,49 @@ extension SdImageFormat: SwiftProtobuf._ProtoNameProviding {
   ]
 }
 
+extension SdUniqueIdentifier: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".UniqueIdentifier"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "upper_bits"),
+    2: .standard(proto: "lower_bits"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularUInt64Field(value: &self.upperBits) }()
+      case 2: try { try decoder.decodeSingularUInt64Field(value: &self.lowerBits) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.upperBits != 0 {
+      try visitor.visitSingularUInt64Field(value: self.upperBits, fieldNumber: 1)
+    }
+    if self.lowerBits != 0 {
+      try visitor.visitSingularUInt64Field(value: self.lowerBits, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: SdUniqueIdentifier, rhs: SdUniqueIdentifier) -> Bool {
+    if lhs.upperBits != rhs.upperBits {return false}
+    if lhs.lowerBits != rhs.lowerBits {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
 extension SdModelInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ModelInfo"
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "name"),
     2: .same(proto: "attention"),
-    3: .standard(proto: "is_loaded"),
-    4: .standard(proto: "loaded_compute_units"),
     5: .standard(proto: "supported_compute_units"),
   ]
 
@@ -343,8 +389,6 @@ extension SdModelInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularStringField(value: &self.name) }()
       case 2: try { try decoder.decodeSingularEnumField(value: &self.attention) }()
-      case 3: try { try decoder.decodeSingularBoolField(value: &self.isLoaded) }()
-      case 4: try { try decoder.decodeSingularEnumField(value: &self.loadedComputeUnits) }()
       case 5: try { try decoder.decodeRepeatedEnumField(value: &self.supportedComputeUnits) }()
       default: break
       }
@@ -358,12 +402,6 @@ extension SdModelInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     if self.attention != .original {
       try visitor.visitSingularEnumField(value: self.attention, fieldNumber: 2)
     }
-    if self.isLoaded != false {
-      try visitor.visitSingularBoolField(value: self.isLoaded, fieldNumber: 3)
-    }
-    if self.loadedComputeUnits != .cpu {
-      try visitor.visitSingularEnumField(value: self.loadedComputeUnits, fieldNumber: 4)
-    }
     if !self.supportedComputeUnits.isEmpty {
       try visitor.visitPackedEnumField(value: self.supportedComputeUnits, fieldNumber: 5)
     }
@@ -373,8 +411,6 @@ extension SdModelInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
   public static func ==(lhs: SdModelInfo, rhs: SdModelInfo) -> Bool {
     if lhs.name != rhs.name {return false}
     if lhs.attention != rhs.attention {return false}
-    if lhs.isLoaded != rhs.isLoaded {return false}
-    if lhs.loadedComputeUnits != rhs.loadedComputeUnits {return false}
     if lhs.supportedComputeUnits != rhs.supportedComputeUnits {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true

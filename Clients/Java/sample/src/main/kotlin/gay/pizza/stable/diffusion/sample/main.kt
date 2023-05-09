@@ -49,8 +49,7 @@ fun main(args: Array<String>) {
   }
   println("available models:")
   for (model in modelListResponse.availableModelsList) {
-    val maybeLoadedComputeUnits = if (model.isLoaded) " loaded_compute_units=${model.loadedComputeUnits.name}" else ""
-    println("  model ${model.name} attention=${model.attention} loaded=${model.isLoaded}${maybeLoadedComputeUnits}")
+    println("  model ${model.name} attention=${model.attention}")
   }
 
   val model = if (chosenModelName == null) {
@@ -59,15 +58,11 @@ fun main(args: Array<String>) {
     modelListResponse.availableModelsList.first { it.name == chosenModelName }
   }
 
-  if (!model.isLoaded) {
-    println("loading model ${model.name}...")
-    client.modelServiceBlocking.loadModel(LoadModelRequest.newBuilder().apply {
-      modelName = model.name
-      computeUnits = model.supportedComputeUnitsList.first()
-    }.build())
-  } else {
-    println("using model ${model.name}...")
-  }
+  println("loading model ${model.name}...")
+  client.hostModelServiceBlocking.loadModel(LoadModelRequest.newBuilder().apply {
+    modelName = model.name
+    computeUnits = model.supportedComputeUnitsList.first()
+  }.build())
 
   println("tokenizing prompts...")
 

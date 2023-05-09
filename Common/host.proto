@@ -12,21 +12,6 @@ option swift_prefix = "Sd";
 option java_multiple_files = true;
 
 /**
- * Represents a request to list the models available on the host.
- */
-message ListModelsRequest {}
-
-/**
- * Represents a response to listing the models available on the host.
- */
-message ListModelsResponse {
-  /**
-   * The available models on the Stable Diffusion server.
-   */
-  repeated ModelInfo available_models = 1;
-}
-
-/**
  * Represents a request to load a model into a specified compute unit.
  */
 message LoadModelRequest {
@@ -49,13 +34,7 @@ message LoadModelResponse {}
 /**
  * The model service, for management and loading of models.
  */
-service ModelService {
-  /**
-   * Lists the available models on the host.
-   * This will return both models that are currently loaded, and models that are not yet loaded.
-   */
-  rpc ListModels(ListModelsRequest) returns (ListModelsResponse);
-
+service HostModelService {
   /**
    * Loads a model onto a compute unit.
    */

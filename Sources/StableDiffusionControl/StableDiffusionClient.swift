@@ -9,7 +9,11 @@ struct StableDiffusionClient {
     let channel: GRPCChannel
 
     let modelService: SdModelServiceAsyncClient
+    let hostModelService: SdHostModelServiceAsyncClient
     let imageGenerationService: SdImageGenerationServiceAsyncClient
+    let tokenizerService: SdTokenizerServiceAsyncClient
+    let jobService: SdJobServiceAsyncClient
+    let serverMetadataService: SdServerMetadataServiceAsyncClient
 
     init(connectionTarget: ConnectionTarget, transportSecurity: GRPCChannelPool.Configuration.TransportSecurity) throws {
         group = PlatformSupport.makeEventLoopGroup(loopCount: 1)
@@ -21,7 +25,11 @@ struct StableDiffusionClient {
         )
 
         modelService = SdModelServiceAsyncClient(channel: channel)
+        hostModelService = SdHostModelServiceAsyncClient(channel: channel)
         imageGenerationService = SdImageGenerationServiceAsyncClient(channel: channel)
+        tokenizerService = SdTokenizerServiceAsyncClient(channel: channel)
+        jobService = SdJobServiceAsyncClient(channel: channel)
+        serverMetadataService = SdServerMetadataServiceAsyncClient(channel: channel)
     }
 
     func close() async throws {

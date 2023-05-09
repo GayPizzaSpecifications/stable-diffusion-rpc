@@ -32,15 +32,6 @@ public actor ModelManager {
         var results: [SdModelInfo] = []
         for simpleInfo in modelInfos.values {
             var info = try SdModelInfo(jsonString: simpleInfo.jsonString())
-            if let maybeLoaded = modelStates[info.name] {
-                info.isLoaded = await maybeLoaded.isModelLoaded()
-                if let loadedComputeUnits = await maybeLoaded.loadedModelComputeUnits() {
-                    info.loadedComputeUnits = loadedComputeUnits
-                }
-            } else {
-                info.isLoaded = false
-                info.loadedComputeUnits = .init()
-            }
 
             if info.attention == .splitEinSum {
                 info.supportedComputeUnits = [

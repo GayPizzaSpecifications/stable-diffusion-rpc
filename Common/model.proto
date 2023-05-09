@@ -1,0 +1,38 @@
+/**
+ * Host management for the Stable Diffusion RPC service.
+ */
+syntax = "proto3";
+package gay.pizza.stable.diffusion;
+import "shared.proto";
+
+/**
+ * Utilize a prefix of 'Sd' for Swift.
+ */
+option swift_prefix = "Sd";
+option java_multiple_files = true;
+
+/**
+ * Represents a request to list the models available on the host.
+ */
+message ListModelsRequest {}
+
+/**
+ * Represents a response to listing the models available on the host.
+ */
+message ListModelsResponse {
+  /**
+   * The available models on the Stable Diffusion server.
+   */
+  repeated ModelInfo available_models = 1;
+}
+
+/**
+ * The model service, for management and loading of models.
+ */
+service ModelService {
+  /**
+   * Lists the available models on the host.
+   * This will return both models that are currently loaded, and models that are not yet loaded.
+   */
+  rpc ListModels(ListModelsRequest) returns (ListModelsResponse);
+}

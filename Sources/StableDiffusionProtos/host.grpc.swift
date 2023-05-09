@@ -29,15 +29,10 @@ import SwiftProtobuf
 ///*
 /// The model service, for management and loading of models.
 ///
-/// Usage: instantiate `SdModelServiceClient`, then call methods of this protocol to make API calls.
-public protocol SdModelServiceClientProtocol: GRPCClient {
+/// Usage: instantiate `SdHostModelServiceClient`, then call methods of this protocol to make API calls.
+public protocol SdHostModelServiceClientProtocol: GRPCClient {
   var serviceName: String { get }
-  var interceptors: SdModelServiceClientInterceptorFactoryProtocol? { get }
-
-  func listModels(
-    _ request: SdListModelsRequest,
-    callOptions: CallOptions?
-  ) -> UnaryCall<SdListModelsRequest, SdListModelsResponse>
+  var interceptors: SdHostModelServiceClientInterceptorFactoryProtocol? { get }
 
   func loadModel(
     _ request: SdLoadModelRequest,
@@ -45,29 +40,9 @@ public protocol SdModelServiceClientProtocol: GRPCClient {
   ) -> UnaryCall<SdLoadModelRequest, SdLoadModelResponse>
 }
 
-extension SdModelServiceClientProtocol {
+extension SdHostModelServiceClientProtocol {
   public var serviceName: String {
-    return "gay.pizza.stable.diffusion.ModelService"
-  }
-
-  ///*
-  /// Lists the available models on the host.
-  /// This will return both models that are currently loaded, and models that are not yet loaded.
-  ///
-  /// - Parameters:
-  ///   - request: Request to send to ListModels.
-  ///   - callOptions: Call options.
-  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
-  public func listModels(
-    _ request: SdListModelsRequest,
-    callOptions: CallOptions? = nil
-  ) -> UnaryCall<SdListModelsRequest, SdListModelsResponse> {
-    return self.makeUnaryCall(
-      path: SdModelServiceClientMetadata.Methods.listModels.path,
-      request: request,
-      callOptions: callOptions ?? self.defaultCallOptions,
-      interceptors: self.interceptors?.makeListModelsInterceptors() ?? []
-    )
+    return "gay.pizza.stable.diffusion.HostModelService"
   }
 
   ///*
@@ -82,7 +57,7 @@ extension SdModelServiceClientProtocol {
     callOptions: CallOptions? = nil
   ) -> UnaryCall<SdLoadModelRequest, SdLoadModelResponse> {
     return self.makeUnaryCall(
-      path: SdModelServiceClientMetadata.Methods.loadModel.path,
+      path: SdHostModelServiceClientMetadata.Methods.loadModel.path,
       request: request,
       callOptions: callOptions ?? self.defaultCallOptions,
       interceptors: self.interceptors?.makeLoadModelInterceptors() ?? []
@@ -92,25 +67,25 @@ extension SdModelServiceClientProtocol {
 
 #if compiler(>=5.6)
 @available(*, deprecated)
-extension SdModelServiceClient: @unchecked Sendable {}
+extension SdHostModelServiceClient: @unchecked Sendable {}
 #endif // compiler(>=5.6)
 
-@available(*, deprecated, renamed: "SdModelServiceNIOClient")
-public final class SdModelServiceClient: SdModelServiceClientProtocol {
+@available(*, deprecated, renamed: "SdHostModelServiceNIOClient")
+public final class SdHostModelServiceClient: SdHostModelServiceClientProtocol {
   private let lock = Lock()
   private var _defaultCallOptions: CallOptions
-  private var _interceptors: SdModelServiceClientInterceptorFactoryProtocol?
+  private var _interceptors: SdHostModelServiceClientInterceptorFactoryProtocol?
   public let channel: GRPCChannel
   public var defaultCallOptions: CallOptions {
     get { self.lock.withLock { return self._defaultCallOptions } }
     set { self.lock.withLockVoid { self._defaultCallOptions = newValue } }
   }
-  public var interceptors: SdModelServiceClientInterceptorFactoryProtocol? {
+  public var interceptors: SdHostModelServiceClientInterceptorFactoryProtocol? {
     get { self.lock.withLock { return self._interceptors } }
     set { self.lock.withLockVoid { self._interceptors = newValue } }
   }
 
-  /// Creates a client for the gay.pizza.stable.diffusion.ModelService service.
+  /// Creates a client for the gay.pizza.stable.diffusion.HostModelService service.
   ///
   /// - Parameters:
   ///   - channel: `GRPCChannel` to the service host.
@@ -119,7 +94,7 @@ public final class SdModelServiceClient: SdModelServiceClientProtocol {
   public init(
     channel: GRPCChannel,
     defaultCallOptions: CallOptions = CallOptions(),
-    interceptors: SdModelServiceClientInterceptorFactoryProtocol? = nil
+    interceptors: SdHostModelServiceClientInterceptorFactoryProtocol? = nil
   ) {
     self.channel = channel
     self._defaultCallOptions = defaultCallOptions
@@ -127,12 +102,12 @@ public final class SdModelServiceClient: SdModelServiceClientProtocol {
   }
 }
 
-public struct SdModelServiceNIOClient: SdModelServiceClientProtocol {
+public struct SdHostModelServiceNIOClient: SdHostModelServiceClientProtocol {
   public var channel: GRPCChannel
   public var defaultCallOptions: CallOptions
-  public var interceptors: SdModelServiceClientInterceptorFactoryProtocol?
+  public var interceptors: SdHostModelServiceClientInterceptorFactoryProtocol?
 
-  /// Creates a client for the gay.pizza.stable.diffusion.ModelService service.
+  /// Creates a client for the gay.pizza.stable.diffusion.HostModelService service.
   ///
   /// - Parameters:
   ///   - channel: `GRPCChannel` to the service host.
@@ -141,7 +116,7 @@ public struct SdModelServiceNIOClient: SdModelServiceClientProtocol {
   public init(
     channel: GRPCChannel,
     defaultCallOptions: CallOptions = CallOptions(),
-    interceptors: SdModelServiceClientInterceptorFactoryProtocol? = nil
+    interceptors: SdHostModelServiceClientInterceptorFactoryProtocol? = nil
   ) {
     self.channel = channel
     self.defaultCallOptions = defaultCallOptions
@@ -153,14 +128,9 @@ public struct SdModelServiceNIOClient: SdModelServiceClientProtocol {
 ///*
 /// The model service, for management and loading of models.
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
-public protocol SdModelServiceAsyncClientProtocol: GRPCClient {
+public protocol SdHostModelServiceAsyncClientProtocol: GRPCClient {
   static var serviceDescriptor: GRPCServiceDescriptor { get }
-  var interceptors: SdModelServiceClientInterceptorFactoryProtocol? { get }
-
-  func makeListModelsCall(
-    _ request: SdListModelsRequest,
-    callOptions: CallOptions?
-  ) -> GRPCAsyncUnaryCall<SdListModelsRequest, SdListModelsResponse>
+  var interceptors: SdHostModelServiceClientInterceptorFactoryProtocol? { get }
 
   func makeLoadModelCall(
     _ request: SdLoadModelRequest,
@@ -169,25 +139,13 @@ public protocol SdModelServiceAsyncClientProtocol: GRPCClient {
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
-extension SdModelServiceAsyncClientProtocol {
+extension SdHostModelServiceAsyncClientProtocol {
   public static var serviceDescriptor: GRPCServiceDescriptor {
-    return SdModelServiceClientMetadata.serviceDescriptor
+    return SdHostModelServiceClientMetadata.serviceDescriptor
   }
 
-  public var interceptors: SdModelServiceClientInterceptorFactoryProtocol? {
+  public var interceptors: SdHostModelServiceClientInterceptorFactoryProtocol? {
     return nil
-  }
-
-  public func makeListModelsCall(
-    _ request: SdListModelsRequest,
-    callOptions: CallOptions? = nil
-  ) -> GRPCAsyncUnaryCall<SdListModelsRequest, SdListModelsResponse> {
-    return self.makeAsyncUnaryCall(
-      path: SdModelServiceClientMetadata.Methods.listModels.path,
-      request: request,
-      callOptions: callOptions ?? self.defaultCallOptions,
-      interceptors: self.interceptors?.makeListModelsInterceptors() ?? []
-    )
   }
 
   public func makeLoadModelCall(
@@ -195,7 +153,7 @@ extension SdModelServiceAsyncClientProtocol {
     callOptions: CallOptions? = nil
   ) -> GRPCAsyncUnaryCall<SdLoadModelRequest, SdLoadModelResponse> {
     return self.makeAsyncUnaryCall(
-      path: SdModelServiceClientMetadata.Methods.loadModel.path,
+      path: SdHostModelServiceClientMetadata.Methods.loadModel.path,
       request: request,
       callOptions: callOptions ?? self.defaultCallOptions,
       interceptors: self.interceptors?.makeLoadModelInterceptors() ?? []
@@ -204,25 +162,13 @@ extension SdModelServiceAsyncClientProtocol {
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
-extension SdModelServiceAsyncClientProtocol {
-  public func listModels(
-    _ request: SdListModelsRequest,
-    callOptions: CallOptions? = nil
-  ) async throws -> SdListModelsResponse {
-    return try await self.performAsyncUnaryCall(
-      path: SdModelServiceClientMetadata.Methods.listModels.path,
-      request: request,
-      callOptions: callOptions ?? self.defaultCallOptions,
-      interceptors: self.interceptors?.makeListModelsInterceptors() ?? []
-    )
-  }
-
+extension SdHostModelServiceAsyncClientProtocol {
   public func loadModel(
     _ request: SdLoadModelRequest,
     callOptions: CallOptions? = nil
   ) async throws -> SdLoadModelResponse {
     return try await self.performAsyncUnaryCall(
-      path: SdModelServiceClientMetadata.Methods.loadModel.path,
+      path: SdHostModelServiceClientMetadata.Methods.loadModel.path,
       request: request,
       callOptions: callOptions ?? self.defaultCallOptions,
       interceptors: self.interceptors?.makeLoadModelInterceptors() ?? []
@@ -231,15 +177,15 @@ extension SdModelServiceAsyncClientProtocol {
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
-public struct SdModelServiceAsyncClient: SdModelServiceAsyncClientProtocol {
+public struct SdHostModelServiceAsyncClient: SdHostModelServiceAsyncClientProtocol {
   public var channel: GRPCChannel
   public var defaultCallOptions: CallOptions
-  public var interceptors: SdModelServiceClientInterceptorFactoryProtocol?
+  public var interceptors: SdHostModelServiceClientInterceptorFactoryProtocol?
 
   public init(
     channel: GRPCChannel,
     defaultCallOptions: CallOptions = CallOptions(),
-    interceptors: SdModelServiceClientInterceptorFactoryProtocol? = nil
+    interceptors: SdHostModelServiceClientInterceptorFactoryProtocol? = nil
   ) {
     self.channel = channel
     self.defaultCallOptions = defaultCallOptions
@@ -249,35 +195,25 @@ public struct SdModelServiceAsyncClient: SdModelServiceAsyncClientProtocol {
 
 #endif // compiler(>=5.6)
 
-public protocol SdModelServiceClientInterceptorFactoryProtocol: GRPCSendable {
-
-  /// - Returns: Interceptors to use when invoking 'listModels'.
-  func makeListModelsInterceptors() -> [ClientInterceptor<SdListModelsRequest, SdListModelsResponse>]
+public protocol SdHostModelServiceClientInterceptorFactoryProtocol: GRPCSendable {
 
   /// - Returns: Interceptors to use when invoking 'loadModel'.
   func makeLoadModelInterceptors() -> [ClientInterceptor<SdLoadModelRequest, SdLoadModelResponse>]
 }
 
-public enum SdModelServiceClientMetadata {
+public enum SdHostModelServiceClientMetadata {
   public static let serviceDescriptor = GRPCServiceDescriptor(
-    name: "ModelService",
-    fullName: "gay.pizza.stable.diffusion.ModelService",
+    name: "HostModelService",
+    fullName: "gay.pizza.stable.diffusion.HostModelService",
     methods: [
-      SdModelServiceClientMetadata.Methods.listModels,
-      SdModelServiceClientMetadata.Methods.loadModel,
+      SdHostModelServiceClientMetadata.Methods.loadModel,
     ]
   )
 
   public enum Methods {
-    public static let listModels = GRPCMethodDescriptor(
-      name: "ListModels",
-      path: "/gay.pizza.stable.diffusion.ModelService/ListModels",
-      type: GRPCCallType.unary
-    )
-
     public static let loadModel = GRPCMethodDescriptor(
       name: "LoadModel",
-      path: "/gay.pizza.stable.diffusion.ModelService/LoadModel",
+      path: "/gay.pizza.stable.diffusion.HostModelService/LoadModel",
       type: GRPCCallType.unary
     )
   }
@@ -287,22 +223,17 @@ public enum SdModelServiceClientMetadata {
 /// The model service, for management and loading of models.
 ///
 /// To build a server, implement a class that conforms to this protocol.
-public protocol SdModelServiceProvider: CallHandlerProvider {
-  var interceptors: SdModelServiceServerInterceptorFactoryProtocol? { get }
-
-  ///*
-  /// Lists the available models on the host.
-  /// This will return both models that are currently loaded, and models that are not yet loaded.
-  func listModels(request: SdListModelsRequest, context: StatusOnlyCallContext) -> EventLoopFuture<SdListModelsResponse>
+public protocol SdHostModelServiceProvider: CallHandlerProvider {
+  var interceptors: SdHostModelServiceServerInterceptorFactoryProtocol? { get }
 
   ///*
   /// Loads a model onto a compute unit.
   func loadModel(request: SdLoadModelRequest, context: StatusOnlyCallContext) -> EventLoopFuture<SdLoadModelResponse>
 }
 
-extension SdModelServiceProvider {
+extension SdHostModelServiceProvider {
   public var serviceName: Substring {
-    return SdModelServiceServerMetadata.serviceDescriptor.fullName[...]
+    return SdHostModelServiceServerMetadata.serviceDescriptor.fullName[...]
   }
 
   /// Determines, calls and returns the appropriate request handler, depending on the request's method.
@@ -312,15 +243,6 @@ extension SdModelServiceProvider {
     context: CallHandlerContext
   ) -> GRPCServerHandlerProtocol? {
     switch name {
-    case "ListModels":
-      return UnaryServerHandler(
-        context: context,
-        requestDeserializer: ProtobufDeserializer<SdListModelsRequest>(),
-        responseSerializer: ProtobufSerializer<SdListModelsResponse>(),
-        interceptors: self.interceptors?.makeListModelsInterceptors() ?? [],
-        userFunction: self.listModels(request:context:)
-      )
-
     case "LoadModel":
       return UnaryServerHandler(
         context: context,
@@ -343,17 +265,9 @@ extension SdModelServiceProvider {
 ///
 /// To implement a server, implement an object which conforms to this protocol.
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
-public protocol SdModelServiceAsyncProvider: CallHandlerProvider {
+public protocol SdHostModelServiceAsyncProvider: CallHandlerProvider {
   static var serviceDescriptor: GRPCServiceDescriptor { get }
-  var interceptors: SdModelServiceServerInterceptorFactoryProtocol? { get }
-
-  ///*
-  /// Lists the available models on the host.
-  /// This will return both models that are currently loaded, and models that are not yet loaded.
-  @Sendable func listModels(
-    request: SdListModelsRequest,
-    context: GRPCAsyncServerCallContext
-  ) async throws -> SdListModelsResponse
+  var interceptors: SdHostModelServiceServerInterceptorFactoryProtocol? { get }
 
   ///*
   /// Loads a model onto a compute unit.
@@ -364,16 +278,16 @@ public protocol SdModelServiceAsyncProvider: CallHandlerProvider {
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
-extension SdModelServiceAsyncProvider {
+extension SdHostModelServiceAsyncProvider {
   public static var serviceDescriptor: GRPCServiceDescriptor {
-    return SdModelServiceServerMetadata.serviceDescriptor
+    return SdHostModelServiceServerMetadata.serviceDescriptor
   }
 
   public var serviceName: Substring {
-    return SdModelServiceServerMetadata.serviceDescriptor.fullName[...]
+    return SdHostModelServiceServerMetadata.serviceDescriptor.fullName[...]
   }
 
-  public var interceptors: SdModelServiceServerInterceptorFactoryProtocol? {
+  public var interceptors: SdHostModelServiceServerInterceptorFactoryProtocol? {
     return nil
   }
 
@@ -382,15 +296,6 @@ extension SdModelServiceAsyncProvider {
     context: CallHandlerContext
   ) -> GRPCServerHandlerProtocol? {
     switch name {
-    case "ListModels":
-      return GRPCAsyncServerHandler(
-        context: context,
-        requestDeserializer: ProtobufDeserializer<SdListModelsRequest>(),
-        responseSerializer: ProtobufSerializer<SdListModelsResponse>(),
-        interceptors: self.interceptors?.makeListModelsInterceptors() ?? [],
-        wrapping: self.listModels(request:context:)
-      )
-
     case "LoadModel":
       return GRPCAsyncServerHandler(
         context: context,
@@ -408,37 +313,26 @@ extension SdModelServiceAsyncProvider {
 
 #endif // compiler(>=5.6)
 
-public protocol SdModelServiceServerInterceptorFactoryProtocol {
-
-  /// - Returns: Interceptors to use when handling 'listModels'.
-  ///   Defaults to calling `self.makeInterceptors()`.
-  func makeListModelsInterceptors() -> [ServerInterceptor<SdListModelsRequest, SdListModelsResponse>]
+public protocol SdHostModelServiceServerInterceptorFactoryProtocol {
 
   /// - Returns: Interceptors to use when handling 'loadModel'.
   ///   Defaults to calling `self.makeInterceptors()`.
   func makeLoadModelInterceptors() -> [ServerInterceptor<SdLoadModelRequest, SdLoadModelResponse>]
 }
 
-public enum SdModelServiceServerMetadata {
+public enum SdHostModelServiceServerMetadata {
   public static let serviceDescriptor = GRPCServiceDescriptor(
-    name: "ModelService",
-    fullName: "gay.pizza.stable.diffusion.ModelService",
+    name: "HostModelService",
+    fullName: "gay.pizza.stable.diffusion.HostModelService",
     methods: [
-      SdModelServiceServerMetadata.Methods.listModels,
-      SdModelServiceServerMetadata.Methods.loadModel,
+      SdHostModelServiceServerMetadata.Methods.loadModel,
     ]
   )
 
   public enum Methods {
-    public static let listModels = GRPCMethodDescriptor(
-      name: "ListModels",
-      path: "/gay.pizza.stable.diffusion.ModelService/ListModels",
-      type: GRPCCallType.unary
-    )
-
     public static let loadModel = GRPCMethodDescriptor(
       name: "LoadModel",
-      path: "/gay.pizza.stable.diffusion.ModelService/LoadModel",
+      path: "/gay.pizza.stable.diffusion.HostModelService/LoadModel",
       type: GRPCCallType.unary
     )
   }

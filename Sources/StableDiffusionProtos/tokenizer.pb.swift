@@ -8,7 +8,7 @@
 //   https://github.com/apple/swift-protobuf/
 
 ///*
-/// Stable Diffusion RPC service for Apple Platforms.
+/// Tokenization for the Stable Diffusion RPC service.
 
 import Foundation
 import SwiftProtobuf

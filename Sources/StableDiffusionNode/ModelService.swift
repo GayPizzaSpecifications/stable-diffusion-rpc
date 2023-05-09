@@ -16,10 +16,4 @@ class ModelServiceProvider: SdModelServiceAsyncProvider {
         response.availableModels.append(contentsOf: models)
         return response
     }
-
-    func loadModel(request: SdLoadModelRequest, context _: GRPCAsyncServerCallContext) async throws -> SdLoadModelResponse {
-        let state = try await modelManager.createModelState(name: request.modelName)
-        try await state.load(request: request)
-        return SdLoadModelResponse()
-    }
 }

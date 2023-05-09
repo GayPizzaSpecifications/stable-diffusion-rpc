@@ -11,6 +11,21 @@ option swift_prefix = "Sd";
 option java_multiple_files = true;
 
 /**
+ * Represents a 128-bit UUID value.
+ */
+message UniqueIdentifier {
+  /**
+   * The upper bits of the UUID.
+   */
+  uint64 upper_bits = 1;
+
+  /**
+   * The lower bits of the UUID.
+   */
+  uint64 lower_bits = 2;
+}
+
+/**
  * Represents the model attention. Model attention has to do with how the model is encoded, and
  * can determine what compute units are able to support a particular model.
  */
@@ -73,9 +88,7 @@ enum ComputeUnits {
  */
 message ModelInfo {
   /**
-   * The name of the available model. Note that within the context of a single RPC server,
-   * the name of a model is a unique identifier. This may not be true when utilizing a cluster or
-   * load balanced server, so keep that in mind.
+   * The name of the available model. Note that a model name is considered a unique identifier.
    */
   string name = 1;
 
@@ -84,17 +97,6 @@ message ModelInfo {
    * load the model and make predictions.
    */
   ModelAttention attention = 2;
-
-  /**
-   * Whether the model is currently loaded onto an available compute unit.
-   */
-  bool is_loaded = 3;
-
-  /**
-   * The compute unit that the model is currently loaded into, if it is loaded to one at all.
-   * When is_loaded is false, the value of this field should be null.
-   */
-  ComputeUnits loaded_compute_units = 4;
 
   /**
    * The compute units that this model supports using.

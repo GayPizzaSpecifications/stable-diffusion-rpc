@@ -35,13 +35,15 @@ struct ServerCommand: ParsableCommand {
         _ = Server.insecure(group: group)
             .withServiceProviders([
                 ModelServiceProvider(modelManager: modelManager),
+                HostModelServiceProvider(modelManager: modelManager),
                 ImageGenerationServiceProvider(jobManager: jobManager, modelManager: modelManager),
                 TokenizerServiceProvider(modelManager: modelManager),
-                JobServiceProvider(jobManager: jobManager)
+                JobServiceProvider(jobManager: jobManager),
+                ServerMetadataServiceProvider()
             ])
             .bind(host: bindHost, port: bindPort)
 
-        print("Stable Diffusion RPC running on \(bindHost):\(bindPort)")
+        print("Stable Diffusion RPC node running on \(bindHost):\(bindPort)")
 
         dispatchMain()
     }

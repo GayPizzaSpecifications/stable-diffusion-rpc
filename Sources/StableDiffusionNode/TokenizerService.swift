@@ -3,7 +3,7 @@ import GRPC
 import StableDiffusionCore
 import StableDiffusionProtos
 
-class TokenizerServiceProvider: SdTokenizerServiceAsyncProvider {
+final class TokenizerServiceProvider: SdTokenizerServiceAsyncProvider {
     private let modelManager: ModelManager
 
     init(modelManager: ModelManager) {

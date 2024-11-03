@@ -3,7 +3,7 @@ import GRPC
 import StableDiffusionCore
 import StableDiffusionProtos
 
-class HostModelServiceProvider: SdHostModelServiceAsyncProvider {
+final class HostModelServiceProvider: SdHostModelServiceAsyncProvider {
     private let modelManager: ModelManager
 
     init(modelManager: ModelManager) {

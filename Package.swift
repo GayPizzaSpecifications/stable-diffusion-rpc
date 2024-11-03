@@ -10,10 +10,10 @@ let package = Package(
         .executable(name: "stable-diffusion-ctl", targets: ["StableDiffusionControl"])
     ],
     dependencies: [
-        .package(url: "https://github.com/apple/ml-stable-diffusion.git", revision: "5d2744e38297b01662b8bdfb41e899ac98036d8b"),
-        .package(url: "https://github.com/apple/swift-protobuf.git", from: "1.6.0"),
-        .package(url: "https://github.com/grpc/grpc-swift.git", from: "1.15.0"),
-        .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.2.0")
+        .package(url: "https://github.com/apple/ml-stable-diffusion.git", revision: "bef26ae4ff14e6a07551c9e6a1dd25675a830249"),
+        .package(url: "https://github.com/apple/swift-protobuf.git", from: "1.28.2"),
+        .package(url: "https://github.com/grpc/grpc-swift.git", from: "1.24.1"),
+        .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.3.0")
     ],
     targets: [
         .target(name: "StableDiffusionProtos", dependencies: [

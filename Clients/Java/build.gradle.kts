@@ -1,5 +1,5 @@
 import com.google.protobuf.gradle.id
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 group = "gay.pizza.stable.diffusion"
 version = "1.0.0-SNAPSHOT"
@@ -8,50 +8,46 @@ plugins {
   `java-library`
   `maven-publish`
 
-  kotlin("jvm") version "1.8.20"
-  kotlin("plugin.serialization") version "1.8.20"
+  kotlin("jvm") version "2.0.21"
+  kotlin("plugin.serialization") version "2.0.21"
 
-  id("com.google.protobuf") version "0.9.2"
+  id("com.google.protobuf") version "0.9.4"
+}
+
+java {
+  withSourcesJar()
 }
 
 repositories {
   mavenCentral()
 }
 
-java {
-  val javaVersion = JavaVersion.toVersion(17)
-  sourceCompatibility = javaVersion
-  targetCompatibility = javaVersion
-
-  withSourcesJar()
-}
-
 dependencies {
   implementation("org.jetbrains.kotlin:kotlin-bom")
   implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 
-  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.0-RC")
+  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
 
-  api("io.grpc:grpc-stub:1.54.1")
-  api("io.grpc:grpc-protobuf:1.54.1")
-  api("io.grpc:grpc-kotlin-stub:1.3.0")
-  implementation("com.google.protobuf:protobuf-java:3.22.3")
+  api("io.grpc:grpc-stub:1.68.1")
+  api("io.grpc:grpc-protobuf:1.68.1")
+  api("io.grpc:grpc-kotlin-stub:1.4.1")
+  implementation("com.google.protobuf:protobuf-java:4.28.3")
 
-  implementation("io.grpc:grpc-netty:1.54.1")
+  implementation("io.grpc:grpc-netty:1.68.1")
 }
 
 protobuf {
   protoc {
-    artifact = "com.google.protobuf:protoc:3.22.3"
+    artifact = "com.google.protobuf:protoc:4.28.3"
   }
 
   plugins {
     create("grpc") {
-      artifact = "io.grpc:protoc-gen-grpc-java:1.54.1"
+      artifact = "io.grpc:protoc-gen-grpc-java:1.68.1"
     }
 
     create("grpckt") {
-      artifact = "io.grpc:protoc-gen-grpc-kotlin:1.3.0:jdk8@jar"
+      artifact = "io.grpc:protoc-gen-grpc-kotlin:1.4.1:jdk8@jar"
     }
   }
 
@@ -96,10 +92,6 @@ publishing {
   }
 }
 
-tasks.withType<KotlinCompile> {
-  kotlinOptions.jvmTarget = "17"
-}
-
 tasks.withType<Wrapper> {
-  gradleVersion = "8.1.1"
+  gradleVersion = "8.10.2"
 }

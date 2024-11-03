@@ -3,7 +3,7 @@ import GRPC
 import StableDiffusionCore
 import StableDiffusionProtos
 
-class JobServiceProvider: SdJobServiceAsyncProvider {
+final class JobServiceProvider: SdJobServiceAsyncProvider {
     private let jobManager: JobManager
 
     init(jobManager: JobManager) {

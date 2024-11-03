@@ -3,7 +3,7 @@ import GRPC
 import StableDiffusionCore
 import StableDiffusionProtos
 
-class ImageGenerationServiceProvider: SdImageGenerationServiceAsyncProvider {
+final class ImageGenerationServiceProvider: SdImageGenerationServiceAsyncProvider {
     private let jobManager: JobManager
     private let modelManager: ModelManager
 
